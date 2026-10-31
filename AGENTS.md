@@ -21,8 +21,9 @@ talks to the TV's ECP and to Immich. No root, no firmware changes.
   Settings → Screen saver → LHD Screensaver.
 - `/tvstats` uses ECP `chanperf`: CPU/RAM of the running channel process only.
   Roku exposes no system-wide CPU/RAM to channels.
-- The helper's auto-launch watcher relaunches on power-on and on Home from
-  another app; Home from LHD itself is deliberate and is not overridden.
+- The helper watcher bounces Home to LHD from anywhere, including inside LHD,
+  unless auto-start is paused/off; power-on also launches LHD. The Settings
+  menu's Roku Home (10 min) / Disable auto-start are the deliberate exits.
 
 ## Commands
 
