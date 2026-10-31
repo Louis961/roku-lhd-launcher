@@ -416,8 +416,8 @@ def watcher():
             else:
                 if app_type == "home":
                     if STATE["auto_launch"] and not paused \
-                            and power == "PowerOn" and now - last_launch > 4:
-                        time.sleep(0.8)
+                            and power == "PowerOn" and now - last_launch > 3:
+                        time.sleep(0.35)
                         _, app_type2 = active_app_info()
                         if app_type2 == "home":
                             print(f"home -> launching {LAUNCHER_APP_ID}", flush=True)
@@ -427,7 +427,7 @@ def watcher():
             last_power = power
         except Exception as exc:
             print(f"watcher: {exc}", flush=True)
-        time.sleep(1)
+        time.sleep(0.5)
 
 
 if __name__ == "__main__":
