@@ -1,8 +1,10 @@
 title=LHD Launcher
 major_version=1
 minor_version=0
-build_version=14
+build_version=15
 screensaver_title=LHD Screensaver
 ui_resolutions=fhd
 splash_screen_fhd=images/lhd-splash.png
 splash_color=0x0A0A0AFF
+mm_icon_focus_fhd=pkg:/images/channel-icon-fhd.png
+mm_icon_focus_hd=pkg:/images/channel-icon-hd.png

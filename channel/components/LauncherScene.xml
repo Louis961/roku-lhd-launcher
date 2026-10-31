@@ -31,10 +31,9 @@
         </Group>
 
         <Group id="content">
-            <Poster id="lhdMark" translation="[64,48]" width="50" height="20" uri="pkg:/images/lhd-mark.png" />
-            <Label id="clock" translation="[120,40]" width="600" height="90" vertAlign="center" />
-            <Label id="date" translation="[120,124]" width="900" height="44" vertAlign="center" />
-            <Label id="weather" translation="[120,166]" width="900" height="40" vertAlign="center" />
+            <Label id="clock" translation="[64,40]" width="600" height="90" vertAlign="center" />
+            <Label id="date" translation="[64,124]" width="900" height="44" vertAlign="center" />
+            <Label id="weather" translation="[64,166]" width="900" height="40" vertAlign="center" />
         </Group>
 
         <Poster id="cog" translation="[1860,40]" width="40" height="40" uri="pkg:/images/stock-cog.png" opacity="0.55" />

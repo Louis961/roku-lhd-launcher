@@ -18,6 +18,7 @@ No root, no OS replacement, no firmware flashing — just a developer-mode chann
 - **Glass drawer** — the dock expands upward into a rounded panel with the dock row at the top.
 - **Immich screensaver** — random photos from an album, crossfaded, with a top-left clock/date/weather.
 - **Official icons** — crisp 512 px app-store icons, plus input/stock icons and a Switch/PlayStation/Raspberry Pi icon picker.
+- **LHD home tile** — the hand+HD mark is the channel icon on the Roku home screen (`mm_icon_focus_fhd` 540×405 and `mm_icon_focus_hd` 290×218), with a branded launch splash.
 - **Rename and re-icon anything** — hold ✱ on an app: Rename, Change icon, Restart.
 - **Process monitor** — CPU/RAM of the launcher process, toggleable in Settings. Roku only exposes per-channel stats via ECP, not system-wide.
 - **Home-aware auto-launch** — Home from another app relaunches LHD; Home from LHD itself is a deliberate exit.
