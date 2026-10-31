@@ -24,7 +24,7 @@ IMMICH_API_KEY = os.environ.get("IMMICH_API_KEY", "").strip()
 IMMICH_ALBUM_IDS = [x.strip() for x in os.environ.get("IMMICH_ALBUM_IDS", "").split(",") if x.strip()]
 AUTO_LAUNCH = os.environ.get("AUTO_LAUNCH", "1") == "1"
 LAUNCHER_APP_ID = os.environ.get("LAUNCHER_APP_ID", "dev")
-STATE = {"auto_launch": AUTO_LAUNCH, "pause_until": 0.0}
+STATE = {"auto_launch": AUTO_LAUNCH, "pause_until": 0.0, "ignore_home_until": 0.0}
 PORT = int(os.environ.get("PORT", "8099"))
 TV = f"http://{TV_IP}:{TV_PORT}"
 
@@ -78,8 +78,31 @@ _stats_cache: dict[str, Any] = {"ts": 0.0, "data": None}
 _stats_lock = threading.Lock()
 
 
+INPUT_KEYS = {
+    "tvinput.hdmi1": "InputHDMI1",
+    "tvinput.hdmi2": "InputHDMI2",
+    "tvinput.hdmi3": "InputHDMI3",
+    "tvinput.hdmi4": "InputHDMI4",
+    "tvinput.cvbs": "InputAV1",
+    "tvinput.av1": "InputAV1",
+    "tvinput.dtv": "InputTuner",
+}
+
+
+def launch_app(app_id):
+    """Launch a channel, or switch a TV input with the InputHDMI*/InputAV* keys."""
+    STATE["ignore_home_until"] = time.time() + 4.0
+    key = INPUT_KEYS.get(app_id)
+    if key:
+        status, _, _ = ecp("/keypress/" + key, method="POST")
+        if status in (200, 204):
+            return status, {}, b""
+    return ecp("/launch/" + app_id, method="POST")
+
+
 def restart_launcher():
     """Close the launcher and relaunch it through ECP."""
+    STATE["ignore_home_until"] = time.time() + 4.0
     ecp("/keypress/Home", method="POST")
     time.sleep(1.2)
     ecp(f"/launch/{LAUNCHER_APP_ID}", method="POST")
@@ -367,7 +390,7 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_payload(status, body, ctype)
             elif self.path.startswith("/launch/"):
                 app_id = self.path.split("/launch/", 1)[1]
-                status, _, _ = ecp("/launch/" + app_id, method="POST")
+                status, _, _ = launch_app(app_id)
                 self.send_json(200, {"ok": status in (200, 204), "status": status})
             elif self.path == "/photo" or self.path.startswith("/photo?"):
                 body, ctype = random_photo()
@@ -383,7 +406,7 @@ class Handler(BaseHTTPRequestHandler):
         if self.path.startswith("/launch/"):
             try:
                 app_id = self.path.split("/launch/", 1)[1]
-                status, _, _ = ecp("/launch/" + app_id, method="POST")
+                status, _, _ = launch_app(app_id)
                 self.send_json(200, {"ok": status in (200, 204), "status": status})
             except Exception as exc:
                 self.send_json(500, {"error": str(exc)})
@@ -407,6 +430,7 @@ def watcher():
             power = get_device().get("power-mode")
             now = time.time()
             paused = now < STATE.get("pause_until", 0.0)
+            ignoring = now < STATE.get("ignore_home_until", 0.0)
             _, app_type = active_app_info()
 
             if power == "PowerOn" and last_power not in (None, "PowerOn"):
@@ -415,7 +439,7 @@ def watcher():
                     last_launch = now
             else:
                 if app_type == "home":
-                    if STATE["auto_launch"] and not paused \
+                    if STATE["auto_launch"] and not paused and not ignoring \
                             and power == "PowerOn" and now - last_launch > 3:
                         time.sleep(0.35)
                         _, app_type2 = active_app_info()

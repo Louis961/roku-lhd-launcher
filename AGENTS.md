@@ -19,6 +19,7 @@ talks to the TV's ECP and to Immich. No root, no firmware changes.
 - Browser previews use `HELPER` near the top of `preview-motion.html`.
 - The screensaver is the channel's `ScreensaverScene`; it is selected in Roku
   Settings → Screen saver → LHD Screensaver.
+- TV inputs (`tvinput.hdmi3`) launch through the helper's `launch_app()` using `InputHDMI*`/`InputAV*` keypresses; launches set a 4 s `ignore_home_until` grace so the Home watcher doesn't bounce the input.
 - `/tvstats` uses ECP `chanperf`: CPU/RAM of the running channel process only.
   Roku exposes no system-wide CPU/RAM to channels.
 - The helper watcher bounces Home to LHD from anywhere, including inside LHD,
