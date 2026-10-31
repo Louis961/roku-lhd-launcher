@@ -100,6 +100,19 @@ On the TV: **Settings → Screen saver → LHD Screensaver** (the channel advert
 curl http://<tv-ip>:8060/query/active-app
 ```
 
+### Direct launch without the Roku Home screen
+
+Roku's Home key is owned by the firmware, so it always shows Roku Home for a
+moment before the helper bounces back — no channel can intercept it. For a true
+one-button launch with **no Roku Home**, use a phone bookmark, Home Assistant
+button, Stream Deck, or smart button that calls:
+
+```
+http://<helper-ip>:8099/launch/dev
+```
+
+That launches LHD directly. (Roku's own Home button still behaves as above.)
+
 ## Controls
 
 | Input | Action |
