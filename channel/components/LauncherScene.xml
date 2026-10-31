@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="LauncherScene" extends="Scene">
+    <script type="text/brightscript" uri="pkg:/source/config.brs" />
+    <script type="text/brightscript" uri="pkg:/components/LauncherScene.brs" />
+    <children>
+        <Group id="bgGroup">
+            <Poster id="bg" width="1920" height="1080" loadDisplayMode="scaleToFit" opacity="1" />
+            <Poster id="bg2" width="1920" height="1080" loadDisplayMode="scaleToFit" opacity="0" />
+        </Group>
+        <Rectangle id="dim" width="1920" height="1080" color="0x000000FF" opacity="0.35" />
+
+        <Group id="shelfGroup">
+            <Poster id="shelfGlow" translation="[510,560]" width="900" height="420" uri="pkg:/images/shelf-glow.png" opacity="0.22" />
+            <Label id="shelfCat" translation="[0,772]" width="1920" height="24" horizAlign="center" vertAlign="center" />
+            <Label id="shelfName" translation="[0,794]" width="1920" height="90" horizAlign="center" vertAlign="center" />
+        </Group>
+
+        <Group id="drawerGroup" translation="[0,1080]" visible="false">
+            <Poster id="panelBg" translation="[90,250]" width="1740" height="700" uri="pkg:/images/panel.png" />
+            <Poster id="drawerGlow" translation="[0,0]" width="220" height="220" uri="pkg:/images/spotlight.png" opacity="1.0" visible="false" />
+            <Rectangle id="panelLine" translation="[122,370]" width="1676" height="1" color="0xFFFFFF1A" />
+            <Label id="drawerTitle" translation="[122,386]" width="900" height="26" vertAlign="center" />
+            <Group id="drawerTiles" translation="[0,430]" />
+            <Label id="drawerHint" translation="[122,902]" width="1676" height="24" vertAlign="center" />
+        </Group>
+
+        <Group id="dockGroup" translation="[0,936]">
+            <Poster id="dockBg" translation="[0,0]" width="644" height="112" uri="pkg:/images/pill.png" />
+            <Poster id="dockGlow" translation="[0,-8]" width="180" height="180" uri="pkg:/images/spotlight.png" opacity="1.0" visible="false" />
+            <Group id="dockTiles" translation="[0,20]" />
+        </Group>
+
+        <Group id="content">
+            <Poster id="lhdMark" translation="[64,48]" width="50" height="20" uri="pkg:/images/lhd-mark.png" />
+            <Label id="clock" translation="[120,40]" width="600" height="90" vertAlign="center" />
+            <Label id="date" translation="[120,124]" width="900" height="44" vertAlign="center" />
+            <Label id="weather" translation="[120,166]" width="900" height="40" vertAlign="center" />
+        </Group>
+
+        <Poster id="cog" translation="[1860,40]" width="40" height="40" uri="pkg:/images/stock-cog.png" opacity="0.55" />
+        <Poster id="cogRing" translation="[1856,36]" width="48" height="48" uri="pkg:/images/ring-cog.png" visible="false" />
+
+        <Group id="monitorGroup" translation="[64,1002]">
+            <Label id="monitorText" width="600" height="26" vertAlign="center" />
+        </Group>
+
+        <Label id="organizeLabel" translation="[0,96]" width="1920" height="30" horizAlign="center" vertAlign="center" visible="false" />
+
+        <Rectangle id="barTrack" translation="[830,18]" width="260" height="2" color="0xF4F3F01F" />
+        <Rectangle id="barFill" translation="[830,18]" width="260" height="2" color="0xF4F3F066" />
+
+        <Group id="toastGroup" translation="[660,820]" visible="false">
+            <Rectangle id="toastBg" width="600" height="52" color="0x141414F2" />
+            <Label id="toastLabel" translation="[0,0]" width="600" height="52" horizAlign="center" vertAlign="center" />
+        </Group>
+
+        <Group id="restartGroup" visible="false">
+            <Rectangle id="restartDim" width="1920" height="1080" color="0x000000FF" opacity="0.72" />
+            <Rectangle id="restartPanel" translation="[610,340]" width="700" height="420" color="0x141414F2" />
+            <Label id="restartTitle" translation="[650,372]" width="620" height="28" />
+            <Label id="restartBody" translation="[650,406]" width="620" height="44" />
+            <Label id="appMenu0" translation="[650,466]" width="620" height="40" />
+            <Label id="appMenu1" translation="[650,518]" width="620" height="40" />
+            <Label id="appMenu2" translation="[650,570]" width="620" height="40" />
+            <Label id="appMenu3" translation="[650,622]" width="620" height="40" />
+            <Label id="restartHint" translation="[650,700]" width="620" height="24" horizAlign="center" vertAlign="center" />
+        </Group>
+
+        <Group id="iconPickerGroup" visible="false">
+            <Rectangle id="iconDim" width="1920" height="1080" color="0x000000FF" opacity="0.78" />
+            <Rectangle id="iconPanel" translation="[300,240]" width="1320" height="600" color="0x141414F5" />
+            <Label id="iconTitle" translation="[340,272]" width="600" height="28" />
+            <Label id="iconAppName" translation="[340,306]" width="1240" height="36" />
+            <Group id="iconGrid" translation="[420,380]" />
+            <Label id="iconHint" translation="[340,790]" width="1240" height="24" />
+        </Group>
+
+        <Group id="renameGroup" visible="false">
+            <Rectangle id="renameDim" width="1920" height="1080" color="0x000000FF" opacity="0.78" />
+            <Rectangle id="renamePanel" translation="[360,220]" width="1200" height="640" color="0x141414F5" />
+            <Label id="renameTitle" translation="[400,252]" width="600" height="28" />
+            <Label id="renameValue" translation="[400,290]" width="1120" height="60" />
+            <Group id="renameGrid" translation="[540,380]" />
+            <Label id="renameHint" translation="[400,812]" width="1120" height="24" />
+        </Group>
+
+        <Group id="menuGroup" visible="false">
+            <Rectangle id="menuDim" width="1920" height="1080" color="0x000000FF" opacity="0.72" />
+            <Rectangle id="menuPanel" translation="[660,300]" width="600" height="576" color="0x141414F2" />
+            <Label id="menuTitle" translation="[700,332]" width="520" height="30" />
+            <Label id="menu0" translation="[700,384]" width="520" height="34" />
+            <Label id="menu1" translation="[700,440]" width="520" height="34" />
+            <Label id="menu2" translation="[700,496]" width="520" height="34" />
+            <Label id="menu3" translation="[700,552]" width="520" height="34" />
+            <Label id="menu4" translation="[700,608]" width="520" height="34" />
+            <Label id="menu5" translation="[700,664]" width="520" height="34" />
+            <Label id="menu6" translation="[700,720]" width="520" height="34" />
+            <Label id="menu7" translation="[700,776]" width="520" height="34" />
+        </Group>
+
+        <Timer id="tick" duration="1" repeat="true" />
+        <Timer id="drift" duration="0.1" repeat="true" />
+        <Timer id="weatherTimer" duration="600" repeat="true" />
+        <Timer id="photoTimer" duration="60" repeat="true" />
+        <Timer id="fadeTimer" duration="0.05" repeat="true" />
+        <Timer id="drawerTimer" duration="0.02" repeat="true" />
+        <Timer id="statsTimer" duration="2" repeat="true" />
+        <Timer id="starTimer" duration="0.7" repeat="false" />
+        <Timer id="okHoldTimer" duration="0.6" repeat="false" />
+        <Timer id="toastTimer" duration="1.8" repeat="false" />
+    </children>
+</component>

@@ -1,0 +1,22 @@
+# credentials — never commit
+.env
+*.env
+!.env.example
+
+# build artifact
+lhd-launcher.zip
+
+# screenshots / browser automation output
+.playwright-cli/
+**/.playwright-cli/
+
+# python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# misc
+.DS_Store
+*.log
+node_modules/

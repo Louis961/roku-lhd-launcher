@@ -1,0 +1,9 @@
+services:
+  roku-launcher-helper:
+    build: .
+    container_name: roku-launcher-helper
+    restart: unless-stopped
+    ports:
+      - "8099:8099"
+    env_file:
+      - .env

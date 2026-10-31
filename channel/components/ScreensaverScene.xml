@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="ScreensaverScene" extends="Scene">
+    <script type="text/brightscript" uri="pkg:/source/config.brs" />
+    <script type="text/brightscript" uri="pkg:/components/ScreensaverScene.brs" />
+    <children>
+        <Group id="photoGroup">
+            <Poster id="photoA" width="1920" height="1080" loadDisplayMode="scaleToFit" opacity="1" />
+            <Poster id="photoB" width="1920" height="1080" loadDisplayMode="scaleToFit" opacity="0" />
+        </Group>
+        <Rectangle id="dim" width="1920" height="1080" color="0x000000FF" opacity="0.5" />
+        <Group id="content">
+            <Label id="clock" translation="[64,40]" width="600" height="90" vertAlign="center" />
+            <Label id="date" translation="[64,124]" width="900" height="44" vertAlign="center" />
+            <Label id="weather" translation="[64,166]" width="900" height="40" vertAlign="center" />
+        </Group>
+        <Rectangle id="barTrack" translation="[830,1052]" width="260" height="2" color="0xF4F3F01F" />
+        <Rectangle id="barFill" translation="[830,1052]" width="260" height="2" color="0xF4F3F066" />
+        <Timer id="tick" duration="1" repeat="true" />
+        <Timer id="drift" duration="0.1" repeat="true" />
+        <Timer id="photoTimer" duration="30" repeat="true" />
+        <Timer id="fadeTimer" duration="0.05" repeat="true" />
+        <Timer id="weatherTimer" duration="600" repeat="true" />
+    </children>
+</component>

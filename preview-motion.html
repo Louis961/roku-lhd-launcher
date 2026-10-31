@@ -1,0 +1,935 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>LHD Launcher — Motion Concept</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --off-black:#050505; --ink:#f4f3f0;
+    --muted:rgba(244,243,240,.64); --dim:rgba(244,243,240,.40);
+    --ease:cubic-bezier(.16,1,.3,1);
+    --spring:cubic-bezier(.22,1,.36,1);
+    --bounce:cubic-bezier(.34,1.42,.64,1);
+    --dock-size:82px;
+    --grid-size:92px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;background:var(--off-black)}
+  body{display:grid;place-items:center;overflow:hidden;font-family:'Outfit',system-ui,-apple-system,sans-serif}
+  .stage{position:relative;width:min(100vw,177.78vh);aspect-ratio:16/9;overflow:hidden;
+    background:radial-gradient(120% 120% at 50% 30%,#1a2420 0%,#0a0d0c 45%,#050505 100%)}
+
+  /* photo */
+  .photo-wrap{position:absolute;inset:0;width:100%;height:100%;
+    transition:filter 620ms var(--ease);will-change:filter}
+  .photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;
+    filter:brightness(.44) saturate(.84) contrast(1.03);
+    transition:opacity 1000ms var(--ease)}
+  .photo.show{opacity:1}
+  .stage[data-drawer="1"] .photo-wrap{filter:blur(9px) brightness(.42)}
+  .scrim{position:absolute;inset:0;background:
+    radial-gradient(ellipse 95% 75% at 50% 44%,rgba(0,0,0,.34) 0%,rgba(0,0,0,.14) 46%,rgba(0,0,0,.82) 100%),
+    linear-gradient(to top,rgba(0,0,0,.66) 0%,rgba(0,0,0,.12) 34%,rgba(0,0,0,0) 60%)}
+  .grain{position:absolute;inset:0;pointer-events:none;opacity:.045;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size:160px 160px}
+
+  /* ambient */
+  .ambient{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;color:var(--ink);opacity:0;pointer-events:none;
+    transition:opacity 480ms var(--ease),transform 620ms var(--spring)}
+  .stage[data-state="ambient"] .ambient{opacity:1;pointer-events:auto}
+  .stage[data-state="launcher"] .ambient{opacity:0;transform:scale(.97)}
+  .clock{display:flex;align-items:baseline;justify-content:center;gap:.16em;
+    font-size:clamp(72px,11.4vw,212px);font-weight:200;line-height:.9;letter-spacing:-.048em;
+    font-variant-numeric:tabular-nums;text-shadow:0 2px 48px rgba(0,0,0,.42)}
+  .ampm{font-size:.15em;font-weight:300;letter-spacing:.16em;color:var(--muted);transform:translateY(-.28em)}
+  .date{margin-top:1.55rem;font-size:clamp(13px,1.45vw,28px);font-weight:300;letter-spacing:.14em;color:var(--muted)}
+  .weather{margin-top:1rem;display:flex;align-items:center;justify-content:center;gap:.5em;
+    font-size:clamp(12px,1.1vw,21px);font-weight:300;letter-spacing:.05em;color:var(--dim)}
+  .weather svg{width:1.1em;height:1.1em;opacity:.72}
+
+  /* launcher */
+  .launcher{position:absolute;inset:0;color:var(--ink);opacity:1;pointer-events:auto;
+    transition:opacity 480ms var(--ease)}
+  .stage[data-state="launcher"] .launcher{opacity:1;pointer-events:auto}
+  .stage[data-state="ambient"] .panel{opacity:0;pointer-events:none;transform:translate(-50%,14px)}
+  .stage[data-state="ambient"] .shelf{opacity:0;transform:translateY(10px)}
+  .stage[data-state="ambient"] .cog{opacity:0;pointer-events:none}
+  .stage[data-state="ambient"] .hint{opacity:0}
+  .head{position:absolute;left:clamp(26px,3.6vw,52px);top:clamp(22px,3vw,44px);
+    display:flex;align-items:baseline;gap:clamp(14px,1.6vw,26px);flex-wrap:wrap}
+  .clock-sm{display:flex;align-items:baseline;gap:.14em;font-size:clamp(20px,2.2vw,38px);font-weight:300;
+    letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+  .clock-sm .ampm{font-size:.42em;transform:none}
+  .head-meta{display:flex;align-items:baseline;gap:.7em;font-size:clamp(11px,1.05vw,18px);font-weight:300;
+    letter-spacing:.09em;color:var(--muted)}
+  .head-meta .sep{opacity:.35}
+  .head .lhd-mark{height:clamp(14px,1.15vw,20px);width:auto;opacity:.9;align-self:center}
+
+  .cog{position:absolute;top:clamp(22px,3vw,44px);right:clamp(26px,3.6vw,52px);
+    width:clamp(34px,2.8vw,46px);height:clamp(34px,2.8vw,46px);padding:0;border:0;background:none;
+    cursor:pointer;opacity:.5;transition:opacity 250ms var(--ease),transform 300ms var(--bounce)}
+  .cog img{width:100%;height:100%;object-fit:contain}
+  .cog.focused{opacity:1;transform:scale(1.12);filter:drop-shadow(0 0 14px rgba(255,255,255,.45))}
+
+  /* top shelf */
+  .shelf{position:absolute;left:0;right:0;bottom:clamp(145px,15vw,175px);display:flex;justify-content:center;
+    pointer-events:none}
+  .shelf-glow{position:absolute;left:50%;bottom:-56px;width:min(900px,70vw);height:400px;
+    transform:translateX(-50%);border-radius:50%;filter:blur(70px);opacity:.22;
+    background:radial-gradient(circle,var(--glow,#ffffff) 0%,transparent 65%);
+    transition:background 520ms var(--ease),opacity 520ms var(--ease)}
+  .shelf-inner{position:relative;text-align:center}
+  .shelf-inner.anim{animation:shelf-in 440ms var(--spring) both}
+  .shelf-cat{font-size:clamp(9px,.85vw,12px);font-weight:400;letter-spacing:.26em;
+    text-transform:uppercase;color:var(--dim);margin-bottom:.55rem}
+  .shelf-name{font-size:clamp(32px,4.4vw,62px);font-weight:300;line-height:1;letter-spacing:-.03em;
+    text-shadow:0 8px 50px rgba(0,0,0,.45)}
+  .shelf{transition:opacity 300ms var(--ease),transform 360ms var(--spring)}
+  .stage[data-drawer="1"] .shelf{opacity:0;transform:translateY(10px)}
+
+  /* morphing dock panel */
+  .panel{position:absolute;left:50%;bottom:clamp(22px,3vw,38px);transform:translateX(-50%);
+    display:flex;flex-direction:column;padding:12px 18px;border-radius:28px;
+    background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.10);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 24px 70px rgba(0,0,0,.45);
+    backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);
+    overflow:hidden;
+    transition:width 460ms var(--spring),height 460ms var(--spring),padding 360ms var(--spring),
+      border-radius 360ms var(--ease),background 320ms var(--ease),box-shadow 320ms var(--ease),
+      opacity 320ms var(--ease),transform 360ms var(--spring)}
+  .panel.expanded{padding:22px 32px 14px;border-radius:32px;background:rgba(12,12,12,.86);
+    box-shadow:0 40px 120px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.12)}
+  .panel.morphing{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+  .panel-head{display:flex;align-items:baseline;justify-content:space-between;gap:20px;
+    height:0;opacity:0;overflow:hidden;flex:0 0 auto;
+    transition:height 300ms var(--spring),opacity 240ms var(--ease)}
+  .panel.expanded .panel-head{height:28px;opacity:1}
+  .panel-title{font-size:clamp(10px,.9vw,13px);letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
+  .panel-count{font-size:clamp(10px,.9vw,13px);letter-spacing:.06em;color:var(--dim)}
+  .dock-row{position:relative;display:flex;align-items:flex-end;justify-content:center;
+    gap:clamp(6px,.8vw,12px);flex:0 0 auto;padding-top:10px}
+  .panel.expanded .dock-row{order:-1;border-bottom:1px solid rgba(255,255,255,.08);
+    padding-top:0;padding-bottom:10px;margin-bottom:10px}
+  .dock-glow{position:absolute;left:0;top:0;width:180px;height:180px;border-radius:50%;
+    background:radial-gradient(circle,rgba(255,255,255,.55) 0%,transparent 68%);
+    filter:blur(14px);opacity:1;pointer-events:none;z-index:0;
+    transition:transform 380ms var(--spring),opacity 240ms var(--ease)}
+  .dock-item{position:relative;z-index:1;background:none;border:0;padding:0;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;gap:6px;color:inherit;font:inherit;
+    transform-origin:bottom center;transition:transform 360ms var(--bounce)}
+  .dock-item .icon{width:var(--dock-size);height:var(--dock-size);border-radius:22.37%;overflow:hidden;
+    display:grid;place-items:center;
+    background:rgba(255,255,255,.04);transform:scale(1);transform-origin:bottom center;
+    transition:transform 360ms var(--bounce),box-shadow 260ms var(--ease)}
+  .dock-item .icon img{width:100%;height:100%;object-fit:cover;pointer-events:none}
+  .dock-item.input .icon img{padding:6px;object-fit:contain}
+  .dock-item.focused .icon{transform:scale(1);box-shadow:0 18px 46px rgba(0,0,0,.55)}
+  .dock-item .label{font-size:clamp(9px,.78vw,11px);font-weight:400;letter-spacing:.02em;color:var(--dim);
+    opacity:0;transform:translateY(-2px);transition:opacity 200ms var(--ease),transform 240ms var(--ease);
+    white-space:nowrap;max-width:9em;overflow:hidden;text-overflow:ellipsis}
+  .dock-item.focused .label{opacity:1;transform:none;color:var(--ink)}
+  .allapps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;width:52%;height:52%}
+  .allapps-grid span{background:rgba(244,243,240,.85);border-radius:50%;aspect-ratio:1}
+
+  .grid{position:relative;display:grid;grid-template-columns:repeat(5,auto);gap:clamp(10px,1.4vw,20px);
+    justify-content:center;align-content:center;
+    flex:0 0 0;max-height:0;min-height:0;opacity:0;pointer-events:none;overflow:hidden;
+    transition:opacity 260ms var(--ease)}
+  .panel.expanded .grid{flex:1 1 auto;max-height:60vh;opacity:1;pointer-events:auto}
+  .grid-glow{position:absolute;left:0;top:0;width:200px;height:200px;border-radius:50%;
+    background:radial-gradient(circle,rgba(255,255,255,.50) 0%,transparent 68%);
+    filter:blur(16px);opacity:1;pointer-events:none;z-index:0;
+    transition:transform 360ms var(--spring),opacity 240ms var(--ease)}
+  .grid-item{position:relative;z-index:1;background:none;border:0;padding:0;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;gap:8px;color:inherit;font:inherit;
+    opacity:0;transform:translateY(16px) scale(.96);
+    transition:opacity 300ms var(--ease),transform 420ms var(--spring);
+    transition-delay:calc(var(--i,0) * 20ms)}
+  .panel.expanded .grid-item{opacity:1;transform:translateY(0) scale(1)}
+  .grid-item .icon{width:var(--grid-size);height:var(--grid-size);border-radius:22.37%;overflow:hidden;
+    display:grid;place-items:center;
+    background:rgba(255,255,255,.04);transform:scale(1);transform-origin:center;
+    transition:transform 320ms var(--bounce),box-shadow 260ms var(--ease)}
+  .grid-item .icon img{width:100%;height:100%;object-fit:cover;pointer-events:none}
+  .grid-item.input .icon img{padding:6px;object-fit:contain}
+  .grid-item.focused .icon{transform:scale(1);
+    box-shadow:0 18px 46px rgba(0,0,0,.5)}
+  .drawer-hint{display:none;padding-top:8px;font-size:clamp(9px,.78vw,12px);font-weight:300;
+    letter-spacing:.08em;color:var(--dim);text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .panel.expanded .drawer-hint{display:block}
+
+  .grid-item .label{font-size:clamp(10px,.88vw,14px);font-weight:400;color:var(--dim);
+    transition:color 220ms var(--ease);white-space:nowrap;max-width:9em;overflow:hidden;text-overflow:ellipsis}
+  .grid-item.focused .label{color:var(--ink)}
+
+  .hint{position:absolute;left:0;right:0;bottom:6px;text-align:center;
+    font-size:clamp(9px,.82vw,12px);font-weight:300;letter-spacing:.08em;color:rgba(244,243,240,.30);
+    transition:opacity 240ms var(--ease)}
+  .stage[data-drawer="1"] .hint{opacity:0}
+
+  /* progress */
+  .progress{position:absolute;left:50%;top:12px;transform:translateX(-50%);width:220px;height:2px;
+    background:rgba(244,243,240,.10);border-radius:2px;overflow:hidden;pointer-events:none}
+  .progress-fill{height:100%;width:100%;background:rgba(244,243,240,.42);transform-origin:left;
+    animation:shrink 12s linear forwards}
+
+  /* launch + toast */
+  .launch-layer{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;
+    transition:opacity 380ms var(--ease);z-index:15}
+  .launch-layer.on{opacity:1}
+  .dock-item .icon.launching,.grid-item .icon.launching{
+    transform:scale(1.55);opacity:0;transition:transform 520ms var(--spring),opacity 400ms var(--ease)}
+  .toast{position:absolute;left:50%;bottom:clamp(120px,14vw,160px);transform:translate(-50%,10px);
+    padding:.6em 1.15em;border-radius:999px;background:rgba(12,12,12,.72);border:1px solid rgba(255,255,255,.12);
+    backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);font-size:clamp(11px,1vw,15px);font-weight:300;
+    letter-spacing:.05em;color:var(--ink);opacity:0;pointer-events:none;z-index:20;
+    transition:opacity 240ms var(--ease),transform 320ms var(--spring)}
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+
+  /* menu */
+  .sysmon{position:absolute;left:clamp(26px,3.6vw,52px);bottom:clamp(18px,2.4vw,34px);z-index:6;
+    display:flex;align-items:center;gap:.55em;padding:.5em .85em;border-radius:999px;
+    background:rgba(16,16,16,.55);border:1px solid rgba(255,255,255,.09);
+    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    font-size:clamp(10px,.85vw,12px);font-weight:300;letter-spacing:.08em;
+    color:var(--muted);font-variant-numeric:tabular-nums;pointer-events:none;
+    transition:opacity 320ms var(--ease)}
+  .sysmon[hidden]{display:none}
+  .stage[data-state="ambient"] .sysmon{opacity:0}
+  .stage[data-drawer="1"] .sysmon{opacity:0}
+  .sysmon-dot{width:6px;height:6px;border-radius:50%;background:#7ad7a0;box-shadow:0 0 8px #7ad7a0}
+
+  .organize-badge{position:absolute;top:96px;left:50%;transform:translateX(-50%);z-index:8;
+    font-size:12px;letter-spacing:.18em;color:#ffd166;padding:6px 14px;border-radius:999px;
+    background:rgba(20,20,20,.55);border:1px solid rgba(255,209,102,.35);
+    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+  .organize-badge[hidden]{display:none}
+  .restart{position:absolute;inset:0;background:rgba(0,0,0,.74);display:grid;place-items:center;z-index:30}
+  .restart[hidden]{display:none}
+  .restart-panel{width:min(520px,78%);background:rgba(20,20,20,.97);border:1px solid rgba(255,255,255,.12);
+    border-radius:20px;padding:30px 36px;text-align:center;box-shadow:0 30px 90px rgba(0,0,0,.55)}
+  .restart-title{font-size:12px;letter-spacing:.2em;color:var(--dim);margin-bottom:14px}
+  .restart-body{font-size:clamp(20px,2vw,26px);font-weight:300;color:var(--ink);margin-bottom:20px}
+  .restart-hint{font-size:12px;letter-spacing:.08em;color:var(--muted)}
+
+  .menu{position:absolute;inset:0;background:rgba(0,0,0,.70);display:grid;place-items:center;z-index:25;
+    opacity:0;pointer-events:none;transition:opacity 260ms var(--ease)}
+  .menu.open{opacity:1;pointer-events:auto}
+  .menu-panel{width:min(600px,80%);background:rgba(20,20,20,.96);border:1px solid rgba(255,255,255,.12);
+    border-radius:20px;padding:28px 38px;box-shadow:0 30px 90px rgba(0,0,0,.55);
+    transform:scale(.96) translateY(10px);opacity:0;
+    transition:transform 360ms var(--spring),opacity 260ms var(--ease)}
+  .menu.open .menu-panel{transform:none;opacity:1}
+  .menu-title{font-size:12px;letter-spacing:.2em;color:var(--dim);margin-bottom:16px}
+  .menu-item{font-size:clamp(18px,1.7vw,24px);font-weight:300;color:var(--muted);padding:7px 0;cursor:pointer;
+    white-space:nowrap;opacity:0;transform:translateX(-8px);
+    transition:opacity 240ms var(--ease),transform 320ms var(--spring),color 180ms var(--ease)}
+  .menu.open .menu-item{opacity:1;transform:none;transition-delay:calc(var(--i,0) * 28ms + 90ms)}
+  .menu-item.sel{color:var(--ink)}
+  .menu-item.sel::before{content:"\203A  ";opacity:.7}
+
+  @keyframes shelf-in{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  @keyframes shrink{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+  @media (prefers-reduced-motion:reduce){
+    .photo-wrap,.photo,.ambient,.launcher,.panel,.dock-item,.dock-glow,.grid-glow,.grid-item,
+    .menu,.menu-panel,.menu-item,.toast,.cog,.icon{transition:none!important;animation:none!important}
+    .photo-wrap{transform:none!important;filter:none!important}
+    .shelf-inner.anim{animation:none!important}
+    .progress-fill{animation:none;transform:scaleX(.35)}
+  }
+</style>
+</head>
+<body>
+<div class="stage" id="stage" data-state="launcher" data-drawer="0">
+  <div class="photo-wrap" id="photoWrap">
+    <img class="photo show" id="bgA" alt="">
+    <img class="photo" id="bgB" alt="">
+  </div>
+  <div class="scrim"></div><div class="grain"></div>
+
+  <div class="launcher">
+    <div class="head">
+      <img class="lhd-mark" src="/channel/images/lhd-mark.png" alt="">
+      <div class="clock-sm"><span data-clock>9:47</span><span class="ampm" data-ampm>PM</span></div>
+      <div class="head-meta"><span data-date></span><span class="sep">/</span><span>62&deg; Clear</span></div>
+    </div>
+
+    <button class="cog" id="cog" aria-label="Settings"><img src="/channel/images/stock-cog.png?v=7" alt=""></button>
+
+    <div class="shelf">
+      <div class="shelf-glow" id="shelfGlow"></div>
+      <div class="shelf-inner" id="shelfInner">
+        <div class="shelf-cat" id="shelfCat">Video</div>
+        <div class="shelf-name" id="shelfName">YouTube</div>
+      </div>
+    </div>
+
+    <div class="panel" id="panel">
+      <div class="panel-head">
+        <span class="panel-title">All apps &amp; inputs</span>
+      </div>
+      <div class="grid" id="grid"><div class="grid-glow" id="gridGlow"></div></div>
+      <div class="dock-row" id="dockRow"><div class="dock-glow" id="dockGlow"></div></div>
+      <div class="drawer-hint" id="drawerHint">ORGANIZE: M &nbsp;·&nbsp; OK adds in drawer &nbsp;·&nbsp; OK removes on dock &nbsp;·&nbsp; HOLD M for app menu</div>
+    </div>
+
+  </div>
+
+  <div class="progress"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="launch-layer" id="launchLayer"></div>
+  <div class="toast" id="toast"></div>
+
+  <div class="sysmon" id="sysmon"><span class="sysmon-dot"></span><span id="sysmonText">CPU —  ·  RAM —</span></div>
+  <div class="organize-badge" id="organizeBadge" hidden>ORGANIZING  ·  M DONE</div>
+
+  <div class="restart" id="restart" hidden>
+    <div class="restart-panel">
+      <div class="restart-title">RESTART</div>
+      <div class="restart-body">Close and restart LHD Launcher?</div>
+      <div class="restart-hint">Enter restart &nbsp;·&nbsp; Esc cancel</div>
+    </div>
+  </div>
+
+  <div class="menu" id="menu">
+    <div class="menu-panel" id="menuPanel">
+      <div class="menu-title">SETTINGS</div>
+      <div class="menu-item" data-i="0">Organize favorites</div>
+      <div class="menu-item" data-i="1">System monitor: On</div>
+      <div class="menu-item" data-i="2">Photo interval: 60s</div>
+      <div class="menu-item" data-i="3">Roku Home (10 min)</div>
+      <div class="menu-item" data-i="4">Store (10 min)</div>
+      <div class="menu-item" data-i="5">Settings (10 min)</div>
+      <div class="menu-item" data-i="6">Disable auto-start</div>
+      <div class="menu-item" data-i="7">Close</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  var use24 = false, state = 'launcher', expanded = false, zone = 'dock', organize = false;
+  var dockIndex = 0, gridIndex = 0, launching = false;
+  var stage = document.getElementById('stage');
+  var panel = document.getElementById('panel');
+  var dockRow = document.getElementById('dockRow');
+  var dockGlow = document.getElementById('dockGlow');
+  var gridEl = document.getElementById('grid');
+  var gridGlow = document.getElementById('gridGlow');
+  var shelfGlow = document.getElementById('shelfGlow');
+  var shelfInner = document.getElementById('shelfInner');
+  var shelfCat = document.getElementById('shelfCat');
+  var shelfName = document.getElementById('shelfName');
+  var cog = document.getElementById('cog');
+  var photoWrap = document.getElementById('photoWrap');
+  var launchLayer = document.getElementById('launchLayer');
+  var toast = document.getElementById('toast');
+  var menu = document.getElementById('menu');
+  var menuEls = Array.prototype.slice.call(document.querySelectorAll('.menu-item'));
+  var menuOpen = false, menuIndex = 0;
+  var organizeBadge = document.getElementById('organizeBadge');
+  var drawerHint = document.getElementById('drawerHint');
+  var restartEl = document.getElementById('restart');
+  var restartOpen = false;
+  var mHeld = false, mLong = false, mHoldTimer = null;
+  var enterHeld = false, enterTimer = null, movingApp = false;
+  var restW = 0, restH = 0;
+  var morphing = false;
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var apps = [
+    {id:'837',   name:'YouTube',        cat:'Video',        color:'#ff2d2d'},
+    {id:'12',    name:'Netflix',        cat:'Streaming',    color:'#e50914'},
+    {id:'592369',name:'Jellyfin',       cat:'Media server', color:'#aa5cc3'},
+    {id:'22297', name:'Spotify',        cat:'Music',        color:'#1db954'},
+    {id:'13',    name:'Prime Video',    cat:'Streaming',    color:'#00a8e1'},
+    {id:'61322', name:'HBO Max',        cat:'Streaming',    color:'#a970ff'},
+    {id:'291097',name:'Disney Plus',    cat:'Streaming',    color:'#1f7fff'},
+    {id:'151908',name:'The Roku Channel',cat:'Free TV',     color:'#6f1ab1'},
+    {id:'2595',  name:'Crunchyroll',    cat:'Anime',        color:'#f47521'},
+    {id:'34376', name:'ESPN',           cat:'Sports',       color:'#e50914'},
+    {id:'31440', name:'Paramount Plus', cat:'Streaming',    color:'#0064ff'},
+    {id:'593099',name:'Peacock TV',     cat:'Streaming',    color:'#f5c518'},
+    {id:'41468', name:'Tubi',           cat:'Free TV',      color:'#7b2ff7'},
+    {id:'773622',name:'Backdrops',      cat:'Photos',       color:'#2f80ed'},
+    {id:'551012',name:'Apple TV',       cat:'Streaming',    color:'#a6a6a6'},
+    {id:'tvinput.hdmi3',name:'PlayStation 5',cat:'Input',color:'#8a8a8a',icon:'/channel/images/input-playstation.png'},
+    {id:'tvinput.hdmi2',name:'RetroPi5', cat:'Input',color:'#8a8a8a',icon:'/channel/images/input-raspberrypi.png'},
+    {id:'tvinput.hdmi1',name:'Gaming Console',cat:'Input',color:'#8a8a8a',icon:'/channel/images/input-gamepad.png'},
+    {id:'tvinput.hdmi4',name:'VIZIO V51',cat:'Input',color:'#8a8a8a',icon:'/channel/images/input-speaker.png'},
+    {id:'tvinput.cvbs', name:'AV',       cat:'Input',color:'#8a8a8a',icon:'/channel/images/input-av.png'},
+    {id:'tvinput.dtv',  name:'Live TV',  cat:'Input',color:'#8a8a8a',icon:'/channel/images/input-livetv.png'}
+  ];
+  var favIds = ['837','12','592369','22297','13','61322'];
+  var favorites = favIds.map(function(id){ return apps.filter(function(a){return a.id===id;})[0]; }).filter(Boolean);
+  var allApps = apps.filter(function(a){ return favIds.indexOf(a.id) === -1; });
+  var dockEls = [], gridEls = [], allItemEl = null, pendingClosest = null;
+
+  function centerOf(el){
+    var r = el.getBoundingClientRect();
+    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+  }
+  function closestIndex(els, point){
+    var best = 0, bestD = Infinity;
+    els.forEach(function(el, i){
+      var c = centerOf(el);
+      var d = Math.hypot(c.x - point.x, c.y - point.y);
+      if (d < bestD){ bestD = d; best = i; }
+    });
+    return best;
+  }
+
+  function glowColor(hex, alpha){
+    var m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex || '');
+    if (!m) return 'rgba(255,255,255,' + alpha + ')';
+    return 'rgba(' + parseInt(m[1],16) + ',' + parseInt(m[2],16) + ',' + parseInt(m[3],16) + ',' + alpha + ')';
+  }
+
+  function iconSrc(app){
+    if (app.icon) return app.icon + '?v=7';
+    return '/channel/images/app-' + app.id + '.png?v=7';
+  }
+  function isInput(app){ return app.id.indexOf('tvinput.') === 0; }
+
+  function buildDock(){
+    dockRow.querySelectorAll('.dock-item').forEach(function(el){ el.remove(); });
+    dockEls = [];
+    allItemEl = null;
+    favorites.forEach(function(app, i){
+      var el = document.createElement('button');
+      el.className = 'dock-item' + (isInput(app) ? ' input' : '');
+      el.setAttribute('aria-label', app.name);
+      el.innerHTML = '<span class="icon"><img src="' + iconSrc(app) + '" alt=""></span>';
+      el.addEventListener('mouseenter', function(){ dockIndex = i; zone = 'dock'; focusDock(); });
+      el.addEventListener('click', function(){ dockIndex = i; zone = 'dock'; launch(app, el.querySelector('.icon')); });
+      dockRow.appendChild(el);
+      dockEls.push(el);
+    });
+    var all = document.createElement('button');
+    all.className = 'dock-item';
+    all.setAttribute('aria-label', 'All apps');
+    all.innerHTML = '<span class="icon"><span class="allapps-grid">' +
+      '<span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>' +
+      '</span></span>';
+    all.addEventListener('mouseenter', function(){ dockIndex = favorites.length; zone = 'dock'; focusDock(); });
+    all.addEventListener('click', function(){
+      dockIndex = favorites.length; zone = 'dock';
+      if (expanded) collapsePanel(); else expandPanel();
+    });
+    dockRow.appendChild(all);
+    dockEls.push(all);
+    allItemEl = all;
+  }
+
+  function buildGrid(){
+    gridEl.querySelectorAll('.grid-item').forEach(function(el){ el.remove(); });
+    gridEls = [];
+    allApps.forEach(function(app, i){
+      var el = document.createElement('button');
+      el.className = 'grid-item' + (isInput(app) ? ' input' : '');
+      el.style.setProperty('--i', i);
+      el.innerHTML = '<span class="icon"><img src="' + iconSrc(app) + '" alt=""></span>' +
+                     '<span class="label">' + app.name + '</span>';
+      el.addEventListener('mouseenter', function(){ gridIndex = i; zone = 'grid'; focusGrid(); });
+      el.addEventListener('click', function(){ gridIndex = i; zone = 'grid'; launch(app, el.querySelector('.icon')); });
+      gridEl.appendChild(el);
+      gridEls.push(el);
+    });
+  }
+
+  function measureRest(){
+    var contentW = 0;
+    dockEls.forEach(function(el){ contentW += el.offsetWidth; });
+    var gap = parseFloat(getComputedStyle(dockRow).columnGap) || 0;
+    contentW += Math.max(0, dockEls.length - 1) * gap;
+    restW = contentW + 36;
+    restH = dockRow.offsetHeight + 24;
+  }
+  function applyRest(){
+    if (expanded) return;
+    measureRest();
+    panel.style.width = restW + 'px';
+    panel.style.height = restH + 'px';
+  }
+
+  function focusDock(){
+    if (!dockEls.length) return;
+    if (dockIndex > dockEls.length - 1) dockIndex = dockEls.length - 1;
+    dockEls.forEach(function(el, i){
+      el.style.transform = 'translateY(0)';
+      el.classList.toggle('focused', i === dockIndex);
+    });
+    var t = dockEls[dockIndex];
+    if (t){
+      var gx = t.offsetLeft + t.offsetWidth / 2 - 90;
+      var gy = t.offsetTop + t.offsetHeight / 2 - 90;
+      dockGlow.style.transform = 'translate(' + gx + 'px,' + gy + 'px)';
+      dockGlow.style.opacity = morphing ? '0' : '1';
+    }
+    var app = dockIndex < favorites.length ? favorites[dockIndex] : null;
+    dockGlow.style.background = 'radial-gradient(circle,' + glowColor(app ? app.color : '#8a8a8a', .62) + ' 0%,transparent 68%)';
+    if (app){
+      shelfCat.textContent = app.cat;
+      shelfName.textContent = app.name;
+      shelfGlow.style.setProperty('--glow', app.color);
+      shelfInner.classList.remove('anim');
+      void shelfInner.offsetWidth;
+      shelfInner.classList.add('anim');
+    } else {
+      shelfCat.textContent = 'Library';
+      shelfName.textContent = 'All apps';
+      shelfGlow.style.setProperty('--glow', '#8a8a8a');
+    }
+    cog.classList.remove('focused');
+    updateHint();
+  }
+
+  function focusGrid(){
+    if (!gridEls.length) return;
+    if (gridIndex > gridEls.length - 1) gridIndex = gridEls.length - 1;
+    dockEls.forEach(function(el){
+      el.classList.remove('focused');
+      el.classList.remove('near');
+      el.style.transform = 'translateY(0)';
+    });
+    dockGlow.style.opacity = '0';
+
+    gridEls.forEach(function(el, i){ el.classList.toggle('focused', i === gridIndex); });
+    var t = gridEls[gridIndex];
+    if (t){
+      var gx = t.offsetLeft + t.offsetWidth / 2 - 100;
+      var gy = t.offsetTop + 46 - 100;
+      gridGlow.style.transform = 'translate(' + gx + 'px,' + gy + 'px)';
+      gridGlow.style.opacity = morphing ? '0' : '1';
+      gridGlow.style.background = 'radial-gradient(circle,' + glowColor((allApps[gridIndex] || {}).color, .58) + ' 0%,transparent 68%)';
+    }
+    cog.classList.remove('focused');
+    updateHint();
+  }
+
+  function expandPanel(){
+    if (expanded) return;
+    expanded = true;
+    zone = 'grid';
+    gridIndex = 0;
+    stage.dataset.drawer = '1';
+    panel.classList.add('expanded');
+    panel.style.width = (stage.clientWidth * 0.92) + 'px';
+    panel.style.height = (stage.clientHeight * 0.66) + 'px';
+    gridIndex = 0;
+    morphing = !reduceMotion;
+    if (morphing){
+      panel.classList.add('morphing');
+      gridGlow.style.opacity = '0';
+      dockGlow.style.opacity = '0';
+      setTimeout(function(){
+        if (!morphing) return;
+        morphing = false;
+        panel.classList.remove('morphing');
+        if (expanded && zone === 'grid') focusGrid();
+      }, 620);
+    }
+    setTimeout(focusGrid, 30);
+    updateHint();
+  }
+  function collapsePanel(target){
+    if (!expanded) return;
+    expanded = false;
+    zone = 'dock';
+    if (typeof target === 'number'){ dockIndex = target; } else { dockIndex = favorites.length; }
+    morphing = !reduceMotion;
+    if (morphing){
+      panel.classList.add('morphing');
+      gridGlow.style.opacity = '0';
+      dockGlow.style.opacity = '0';
+      setTimeout(function(){
+        if (!morphing) return;
+        morphing = false;
+        panel.classList.remove('morphing');
+        if (!expanded && zone === 'dock') focusDock();
+      }, 620);
+    }
+    stage.dataset.drawer = '0';
+    panel.classList.remove('expanded');
+    applyRest();
+    focusDock();
+  }
+
+  function updateHint(){ /* on-screen instructions removed */ }
+
+  function launch(app, iconEl){
+    if (launching) return;
+    launching = true;
+    launchLayer.classList.add('on');
+    if (iconEl) iconEl.classList.add('launching');
+    toast.textContent = 'Launching ' + app.name;
+    toast.classList.add('show');
+    setTimeout(function(){
+      launchLayer.classList.remove('on');
+      if (iconEl) iconEl.classList.remove('launching');
+      toast.classList.remove('show');
+      launching = false;
+    }, 1400);
+  }
+
+  function moveGridApp(delta){
+    var j = gridIndex + delta;
+    if (j < 0 || j >= allApps.length) return;
+    var tmp = allApps[gridIndex];
+    allApps[gridIndex] = allApps[j];
+    allApps[j] = tmp;
+    gridIndex = j;
+    buildGrid();
+    focusGrid();
+  }
+
+  function addFav(){
+    if (!allApps.length) return;
+    var app = allApps[gridIndex];
+    allApps.splice(gridIndex, 1);
+    favorites.push(app);
+    if (gridIndex >= allApps.length) gridIndex = Math.max(0, allApps.length - 1);
+    buildDock(); buildGrid();
+    if (!expanded) applyRest();
+    focusGrid();
+    toastMsg('Added ' + app.name + ' to dock');
+  }
+  function removeDockFav(){
+    if (!favorites.length || dockIndex >= favorites.length) return;
+    var app = favorites[dockIndex];
+    favorites.splice(dockIndex, 1);
+    allApps.push(app);
+    if (dockIndex >= favorites.length) dockIndex = Math.max(0, favorites.length - 1);
+    buildDock(); buildGrid();
+    if (!expanded) applyRest();
+    focusDock();
+    toastMsg('Removed ' + app.name + ' from dock');
+  }
+  function moveFav(dir){
+    var j = dockIndex + dir;
+    if (j < 0 || j >= favorites.length) return;
+    var tmp = favorites[dockIndex]; favorites[dockIndex] = favorites[j]; favorites[j] = tmp;
+    dockIndex = j;
+    buildDock();
+    if (!expanded) applyRest();
+    focusDock();
+  }
+
+  function toastMsg(text){
+    toast.textContent = text; toast.classList.add('show');
+    setTimeout(function(){ toast.classList.remove('show'); }, 1700);
+  }
+
+  function updateMenu(){
+    menuEls.forEach(function(el, i){ el.classList.toggle('sel', i === menuIndex); });
+  }
+  function openMenu(){ menuOpen = true; menuIndex = 0; menu.classList.add('open'); updateMenu(); }
+  function closeMenu(){ menuOpen = false; menu.classList.remove('open'); }
+
+  function updateDrawerHint(){
+    if (movingApp){
+      drawerHint.textContent = 'MOVING APP  ·  ARROWS PLACE IT  ·  OK DROP  ·  BACK CANCEL';
+    } else if (organize){
+      drawerHint.textContent = 'ORGANIZING  ·  HOLD OK to move app  ·  OK adds/removes  ·  M DONE';
+    } else {
+      drawerHint.textContent = 'ORGANIZE: M  ·  OK adds in drawer  ·  OK removes on dock  ·  HOLD M for app menu';
+    }
+  }
+  function setOrganize(on){
+    organize = on;
+    if (!on) movingApp = false;
+    organizeBadge.hidden = !on;
+    organizeBadge.textContent = movingApp ? 'MOVING  ·  ARROWS PLACE  ·  ENTER DROP' : 'ORGANIZING  ·  M DONE';
+    updateDrawerHint();
+  }
+  function toggleOrganize(){ setOrganize(!organize); }
+  function openRestart(){ restartOpen = true; restartEl.hidden = false; }
+  function closeRestart(){ restartOpen = false; restartEl.hidden = true; }
+  function restartNow(){ closeRestart(); toastMsg('Restarting LHD Launcher…'); }
+  function menuAction(){
+    if (menuIndex === 0){ organize = true; closeMenu(); setOrganize(true); focusDock(); }
+    else if (menuIndex === 1){ toggleMonitor(); }
+    else if (menuIndex === 2){ cycleInterval(); }
+    else if (menuIndex === 3){ closeMenu(); toastMsg('Roku Home (auto-start paused)'); }
+    else if (menuIndex === 4){ closeMenu(); toastMsg('Store on Roku Home (paused)'); }
+    else if (menuIndex === 5){ closeMenu(); toastMsg('Settings on Roku Home (paused)'); }
+    else if (menuIndex === 6){ closeMenu(); toastMsg('Auto-start disabled'); }
+    else { closeMenu(); }
+  }
+  menuEls.forEach(function(el, i){
+    el.addEventListener('mouseenter', function(){ menuIndex = i; updateMenu(); });
+    el.addEventListener('click', function(){ menuIndex = i; updateMenu(); menuAction(); });
+  });
+
+  document.addEventListener('keydown', function(e){
+    if (restartOpen){
+      if (e.key==='Enter'){ restartNow(); e.preventDefault(); return; }
+      if (e.key==='Escape'||e.key==='Backspace'){ closeRestart(); e.preventDefault(); return; }
+      return;
+    }
+    if (menuOpen){
+      if (e.key==='ArrowUp'){ menuIndex = Math.max(0, menuIndex-1); updateMenu(); e.preventDefault(); return; }
+      if (e.key==='ArrowDown'){ menuIndex = Math.min(menuEls.length-1, menuIndex+1); updateMenu(); e.preventDefault(); return; }
+      if (e.key==='Enter'){ menuAction(); e.preventDefault(); return; }
+      if (e.key==='Escape'||e.key==='Backspace'){ closeMenu(); e.preventDefault(); return; }
+      return;
+    }
+    if (launching) return;
+    if (e.key==='t'||e.key==='T'){ use24 = !use24; tick(); return; }
+    if (e.key==='n'||e.key==='N'){ setPhoto(activePhoto === 0 ? bgB : bgA); return; }
+    if (e.key==='d'||e.key==='D'){ demoCycle = !demoCycle; return; }
+
+    if (state === 'ambient'){
+      if (e.key==='ArrowDown'||e.key==='Enter'||e.key===' '){ setState('launcher'); e.preventDefault(); }
+      return;
+    }
+    if (e.key==='Escape'||e.key==='Backspace'||e.key==='b'||e.key==='B'){
+      if (movingApp){ movingApp = false; organizeBadge.textContent = 'ORGANIZING  ·  M DONE'; updateDrawerHint(); return; }
+      if (expanded){ collapsePanel(); return; }
+      if (organize){ organize = false; updateHint(); focusDock(); return; }
+      if (zone === 'cog'){ zone = 'dock'; focusDock(); return; }
+      setState('ambient');
+      return;
+    }
+    if (e.key==='m'||e.key==='M'){
+      if (!mHeld){
+        mHeld = true;
+        mLong = false;
+        mHoldTimer = setTimeout(function(){ mLong = true; openRestart(); }, 700);
+      }
+      return;
+    }
+    if ((e.key==='f'||e.key==='F') && organize){
+      if (expanded) addFav(); else removeDockFav();
+      return;
+    }
+    if (zone === 'cog'){
+      if (e.key==='ArrowDown'){ zone = 'dock'; focusDock(); e.preventDefault(); }
+      if (e.key==='Enter'){ openMenu(); e.preventDefault(); }
+      return;
+    }
+    if (expanded && zone === 'grid'){
+      if (organize && e.key==='Enter'){
+        if (movingApp){
+          movingApp = false;
+          organizeBadge.textContent = 'ORGANIZING  ·  M DONE';
+          updateDrawerHint();
+        } else if (!enterHeld){
+          enterHeld = true;
+          enterTimer = setTimeout(function(){
+            movingApp = true;
+            organizeBadge.textContent = 'MOVING  ·  ARROWS PLACE  ·  ENTER DROP';
+            updateDrawerHint();
+          }, 600);
+        }
+        e.preventDefault();
+        return;
+      }
+      if (movingApp){
+        if (e.key==='ArrowLeft') moveGridApp(-1);
+        else if (e.key==='ArrowRight') moveGridApp(1);
+        else if (e.key==='ArrowUp') moveGridApp(-5);
+        else if (e.key==='ArrowDown') moveGridApp(5);
+        e.preventDefault();
+        return;
+      }
+      if (organize && (e.key==='[' || e.key===']')){
+        moveGridApp(e.key==='[' ? -1 : 1);
+        e.preventDefault();
+        return;
+      }
+      if (e.key==='ArrowLeft'){ gridIndex = Math.max(0, gridIndex-1); focusGrid(); e.preventDefault(); }
+      if (e.key==='ArrowRight'){ gridIndex = Math.min(allApps.length-1, gridIndex+1); focusGrid(); e.preventDefault(); }
+      if (e.key==='ArrowUp'){
+        if (gridIndex >= 5){ gridIndex -= 5; focusGrid(); }
+        else {
+          var gp = centerOf(gridEls[gridIndex]);
+          collapsePanel(closestIndex(dockEls, gp));
+        }
+        e.preventDefault();
+      }
+      if (e.key==='ArrowDown'){
+        if (gridIndex + 5 < allApps.length){ gridIndex += 5; focusGrid(); }
+        e.preventDefault();
+      }
+      if (e.key==='Enter'){
+        if (organize) addFav();
+        else launch(allApps[gridIndex], gridEls[gridIndex] ? gridEls[gridIndex].querySelector('.icon') : null);
+        e.preventDefault();
+      }
+      return;
+    }
+    if (e.key==='ArrowLeft'){
+      if (organize && dockIndex < favorites.length) moveFav(-1);
+      else { dockIndex = Math.max(0, dockIndex-1); zone = 'dock'; focusDock(); }
+      e.preventDefault();
+    }
+    if (e.key==='ArrowRight'){
+      if (organize && dockIndex < favorites.length) moveFav(1);
+      else { dockIndex = Math.min(favorites.length, dockIndex+1); zone = 'dock'; focusDock(); }
+      e.preventDefault();
+    }
+    if (e.key==='ArrowUp'){
+      if (expanded){ collapsePanel(dockIndex); }
+      else { zone = 'cog'; cog.classList.add('focused'); updateHint(); }
+      e.preventDefault(); return;
+    }
+    if (e.key==='ArrowDown'){
+      if (expanded){
+        var dp = centerOf(dockEls[dockIndex]);
+        gridIndex = closestIndex(gridEls, dp);
+        zone = 'grid'; focusGrid();
+      } else { expandPanel(); }
+      e.preventDefault(); return;
+    }
+    if (e.key==='Enter'){
+      if (organize && dockIndex < favorites.length) removeDockFav();
+      else if (dockIndex === favorites.length){ if (expanded) collapsePanel(); else expandPanel(); }
+      else launch(favorites[dockIndex], dockEls[dockIndex] ? dockEls[dockIndex].querySelector('.icon') : null);
+      e.preventDefault();
+    }
+  });
+  document.addEventListener('keyup', function(e){
+    if (e.key==='m'||e.key==='M'){
+      if (mHoldTimer){ clearTimeout(mHoldTimer); mHoldTimer = null; }
+      if (mHeld && !mLong) toggleOrganize();
+      mHeld = false;
+      mLong = false;
+    }
+    if (e.key==='Enter'){
+      if (enterTimer){ clearTimeout(enterTimer); enterTimer = null; }
+      if (enterHeld && !movingApp) addFav();
+      enterHeld = false;
+    }
+  });
+
+  cog.addEventListener('click', openMenu);
+
+  function setState(s){
+    state = s;
+    stage.dataset.state = s;
+    if (s === 'launcher'){ zone = 'dock'; focusDock(); }
+  }
+
+  function pad(n){ return n<10 ? '0'+n : ''+n; }
+  function tick(){
+    var d = new Date(), h = d.getHours(), m = d.getMinutes();
+    var clock = use24 ? pad(h)+':'+pad(m) : ((h%12)||12)+':'+pad(m);
+    var suf = h>=12 ? 'PM' : 'AM';
+    document.querySelectorAll('[data-clock]').forEach(function(el){ el.textContent = clock; });
+    document.querySelectorAll('[data-ampm]').forEach(function(el){ el.textContent = suf; el.style.display = use24?'none':''; });
+    var date = d.toLocaleDateString('en-GB',{weekday:'long'}) + ', ' + d.toLocaleDateString('en-GB',{day:'numeric',month:'long'});
+    document.querySelectorAll('[data-date]').forEach(function(el){ el.textContent = date; });
+  }
+
+  var HELPER = 'http://192.168.1.50:8099';
+
+  var monitorOn = true;
+  try { if (localStorage.getItem('lhd-monitor') === '0') monitorOn = false; } catch (e) {}
+  var sysmonEl = document.getElementById('sysmon');
+  var sysmonText = document.getElementById('sysmonText');
+  var statsBusy = false;
+
+  function applyMonitor(){
+    sysmonEl.hidden = !monitorOn;
+    if (menuEls[1]) menuEls[1].textContent = 'System monitor: ' + (monitorOn ? 'On' : 'Off');
+    if (!monitorOn) sysmonText.textContent = 'CPU —  ·  RAM —';
+  }
+  function toggleMonitor(){
+    monitorOn = !monitorOn;
+    try { localStorage.setItem('lhd-monitor', monitorOn ? '1' : '0'); } catch (e) {}
+    applyMonitor();
+    if (monitorOn) fetchStats();
+  }
+  function fetchStats(){
+    if (!monitorOn || statsBusy) return;
+    statsBusy = true;
+    fetch(HELPER + '/tvstats', {cache: 'no-store'}).then(function(r){
+      if (!r.ok) throw new Error('http ' + r.status);
+      return r.json();
+    }).then(function(d){
+      statsBusy = false;
+      if (!d || d.ok !== true){ sysmonText.textContent = 'CPU —  ·  RAM —'; return; }
+      sysmonText.textContent = 'CPU ' + Number(d.cpu).toFixed(1) + '%  ·  RAM ' + Math.round(d.ram_mb) + ' MB';
+    }).catch(function(){
+      statsBusy = false;
+      sysmonText.textContent = 'CPU —  ·  RAM —';
+    });
+  }
+  applyMonitor();
+  setInterval(fetchStats, 2000);
+  fetchStats();
+  var FALLBACK = 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1920&q=80';
+  var photoTick = 0, activePhoto = 0, demoCycle = true;
+  var bgA = document.getElementById('bgA'), bgB = document.getElementById('bgB');
+  var progressFill = document.getElementById('progressFill');
+  var intervals = [30000, 60000, 120000, 300000];
+  var intervalIndex = 1;
+  var photoInterval = intervals[intervalIndex];
+  var cycleTimer = null;
+
+  function intervalText(ms){
+    if (ms === 30000) return '30s';
+    if (ms === 60000) return '60s';
+    if (ms === 120000) return '2m';
+    if (ms === 300000) return '5m';
+    return (ms/1000) + 's';
+  }
+  function cycleInterval(){
+    intervalIndex = (intervalIndex + 1) % intervals.length;
+    photoInterval = intervals[intervalIndex];
+    if (menuEls[2]) menuEls[2].textContent = 'Photo interval: ' + intervalText(photoInterval);
+    resetBar(); startCycle();
+  }
+  function startCycle(){
+    if (cycleTimer) clearInterval(cycleTimer);
+    cycleTimer = setInterval(function(){ if (demoCycle) setPhoto(activePhoto === 0 ? bgB : bgA); }, photoInterval);
+  }
+  function resetBar(){
+    progressFill.style.animation = 'none';
+    void progressFill.offsetWidth;
+    progressFill.style.animation = 'shrink ' + (photoInterval/1000) + 's linear forwards';
+  }
+  function setPhoto(el){
+    var other = (el === bgA) ? bgB : bgA;
+    el.onload = function(){
+      el.classList.add('show'); other.classList.remove('show');
+      activePhoto = (el === bgA) ? 0 : 1;
+      resetBar();
+    };
+    el.onerror = function(){ el.onerror = null; el.src = FALLBACK; };
+    el.src = HELPER + '/photo?t=' + (++photoTick);
+  }
+
+  panel.addEventListener('transitionend', function(ev){
+    if (ev.propertyName === 'width' || ev.propertyName === 'height'){
+      morphing = false;
+      panel.classList.remove('morphing');
+      if (expanded && zone === 'grid') focusGrid();
+      if (!expanded && zone === 'dock') focusDock();
+    }
+  });
+
+  updateDrawerHint();
+  buildDock();
+  buildGrid();
+  applyRest();
+  focusDock();
+  focusGrid();
+  updateHint();
+  tick();
+  setInterval(tick, 1000);
+  setPhoto(bgA);
+  resetBar();
+  startCycle();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(applyRest);
+  window.addEventListener('resize', applyRest);
+
+</script>
+</body>
+</html>

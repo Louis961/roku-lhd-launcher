@@ -1,0 +1,8 @@
+title=LHD Launcher
+major_version=1
+minor_version=0
+build_version=14
+screensaver_title=LHD Screensaver
+ui_resolutions=fhd
+splash_screen_fhd=images/lhd-splash.png
+splash_color=0x0A0A0AFF
