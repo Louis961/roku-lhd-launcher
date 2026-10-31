@@ -21,7 +21,7 @@ No root, no OS replacement, no firmware flashing — just a developer-mode chann
 - **LHD home tile** — the hand+HD mark is the channel icon on the Roku home screen (`mm_icon_focus_fhd` 540×405 and `mm_icon_focus_hd` 290×218), with a branded launch splash.
 - **Rename and re-icon anything** — hold ✱ on an app: Rename, Change icon, Restart.
 - **Process monitor** — CPU/RAM of the launcher process, toggleable in Settings. Roku only exposes per-channel stats via ECP, not system-wide.
-- **Home-aware auto-launch** — Home from another app relaunches LHD; Home from LHD itself is a deliberate exit.
+- **Home returns to LHD** — pressing Home from anywhere (including inside LHD) bounces back to the launcher in about 1–2 seconds. Use Settings → Roku Home (10 min) or Disable auto-start to stay on Roku.
 
 ## How it works
 
@@ -109,7 +109,7 @@ curl http://<tv-ip>:8060/query/active-app
 | **Hold OK** (organize) | Pick up an app; arrows place it; OK drops |
 | **Short OK** (organize) | Add (drawer) / remove (dock) |
 | **Back** | Close drawer / cancel move / exit organize |
-| Cog | Settings (photo interval, monitor, Home/Store/Settings pauses, auto-start) |
+| Cog | Settings; the shelf reads **Settings** when the cog is focused (photo interval, monitor, Home/Store/Settings pauses, auto-start) |
 
 In the drawer, `ORGANIZING` shows the live key hints. The picked-up app gets a gold ring, a lift/scale, a gold spotlight and a `MOVING` banner.
 
@@ -196,7 +196,7 @@ The preview fetches `/tvstats` and `/photo` from your helper; if it is offline t
 - **401 from the installer** — wrong Roku developer password, or developer mode is off. Reset it in the TV's Developer Settings.
 - **Blank/empty app list** — the helper is unreachable. Check `/health`, `TV_IP`, and the LAN; the channel shows a toast.
 - **Photos don't cycle** — check `IMMICH_*` and `/photo`; the interval is under Settings → Photo interval.
-- **Home doesn't return to LHD** — the helper watcher relaunches only when Home comes from another app; Home from LHD is deliberate.
+- **Home stays on Roku** — auto-start is paused or off. Use the Settings menu to resume it, or restart the helper; `/health` shows `auto_launch` and `paused`.
 - **Preview shows no photos** — set `HELPER` in the preview; the helper must be reachable from your browser.
 
 ## Credits

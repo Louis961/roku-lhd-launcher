@@ -399,16 +399,15 @@ def launch_launcher():
 
 
 def watcher():
-    """Bounce Home back to LHD Launcher, unless the user left the launcher deliberately."""
+    """Bounce Home back to LHD Launcher unless auto-start is paused."""
     last_power = None
-    last_active = None
     last_launch = 0.0
     while True:
         try:
             power = get_device().get("power-mode")
             now = time.time()
             paused = now < STATE.get("pause_until", 0.0)
-            app_id, app_type = active_app_info()
+            _, app_type = active_app_info()
 
             if power == "PowerOn" and last_power not in (None, "PowerOn"):
                 if STATE["auto_launch"] and not paused:
@@ -416,20 +415,19 @@ def watcher():
                     last_launch = now
             else:
                 if app_type == "home":
-                    deliberate = last_active == LAUNCHER_APP_ID
-                    if STATE["auto_launch"] and not paused and not deliberate \
-                            and power == "PowerOn" and now - last_launch > 8:
-                        time.sleep(1.5)
-                        launch_launcher()
-                        last_launch = time.time()
-                else:
-                    if app_id is not None:
-                        last_active = app_id
+                    if STATE["auto_launch"] and not paused \
+                            and power == "PowerOn" and now - last_launch > 4:
+                        time.sleep(0.8)
+                        _, app_type2 = active_app_info()
+                        if app_type2 == "home":
+                            print(f"home -> launching {LAUNCHER_APP_ID}", flush=True)
+                            ecp(f"/launch/{LAUNCHER_APP_ID}", method="POST")
+                            last_launch = time.time()
 
             last_power = power
         except Exception as exc:
             print(f"watcher: {exc}", flush=True)
-        time.sleep(2)
+        time.sleep(1)
 
 
 if __name__ == "__main__":

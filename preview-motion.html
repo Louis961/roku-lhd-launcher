@@ -487,6 +487,22 @@
     updateHint();
   }
 
+  function focusCog(){
+    zone = 'cog';
+    cog.classList.add('focused');
+    dockEls.forEach(function(el){ el.classList.remove('focused'); el.style.transform = 'translateY(0)'; });
+    gridEls.forEach(function(el){ el.classList.remove('focused'); });
+    dockGlow.style.opacity = '0';
+    gridGlow.style.opacity = '0';
+    shelfCat.textContent = 'LAUNCHER';
+    shelfName.textContent = 'Settings';
+    shelfGlow.style.setProperty('--glow', '#f4f3f0');
+    shelfInner.classList.remove('anim');
+    void shelfInner.offsetWidth;
+    shelfInner.classList.add('anim');
+    updateHint();
+  }
+
   function focusGrid(){
     if (!gridEls.length) return;
     if (gridIndex > gridEls.length - 1) gridIndex = gridEls.length - 1;
@@ -774,7 +790,7 @@
     }
     if (e.key==='ArrowUp'){
       if (expanded){ collapsePanel(dockIndex); }
-      else { zone = 'cog'; cog.classList.add('focused'); updateHint(); }
+      else { focusCog(); }
       e.preventDefault(); return;
     }
     if (e.key==='ArrowDown'){

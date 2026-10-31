@@ -785,6 +785,10 @@ sub updateFocus()
             if m.zone = "cog" then
                 m.cog.opacity = 1.0
                 m.cogRing.visible = true
+                m.shelfGroup.visible = not m.drawerOpen
+                m.shelfCat.text = "LAUNCHER"
+                m.shelfName.text = "Settings"
+                m.shelfGlow.blendColor = "0xF4F3F0FF"
             end if
         end if
     end if

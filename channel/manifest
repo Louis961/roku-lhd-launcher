@@ -1,7 +1,7 @@
 title=LHD Launcher
 major_version=1
 minor_version=0
-build_version=15
+build_version=16
 screensaver_title=LHD Screensaver
 ui_resolutions=fhd
 splash_screen_fhd=images/lhd-splash.png
