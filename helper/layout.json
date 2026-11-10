@@ -1,0 +1,26 @@
+{
+  "_readme": "Edit this file, then restart the launcher (cog > Restart launcher, or press Home). The helper re-reads it on every request and serves it inside /apps, so nothing needs rebuilding or reinstalling. Order in 'dock' is the order on screen; ids must exist in /query/apps.",
+
+  "dock": ["12", "13", "837", "291097", "13535"],
+
+  "drawer": [
+    "151908", "2285", "593099", "65067", "2595", "48537",
+    "168243", "23353", "244655", "60342",
+    "tvinput.hdmi1", "tvinput.hdmi2", "tvinput.hdmi3", "tvinput.cvbs", "tvinput.dtv"
+  ],
+
+  "apps": {
+    "13": { "name": "Prime" },
+    "13535": { "name": "Plex" },
+    "151908": { "name": "Roku" },
+    "168243": { "name": "BBC" },
+    "60342": { "name": "Met Opera" },
+    "tvinput.hdmi1": { "name": "Xbox", "icon": "gamepad" }
+  },
+
+  "photo_interval": 60,
+
+  "_icons": "change a tile's icon without the remote: switch, gamepad, playstation, raspberrypi, speaker, hdmi, av, livetv, stock, generic",
+
+  "_background": "wallpaper comes from /photo: Immich if configured, otherwise a random image from helper/photos. Drop .jpg or .png files there and they appear."
+}

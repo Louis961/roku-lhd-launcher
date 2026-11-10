@@ -29,6 +29,34 @@ PORT = int(os.environ.get("PORT", "8099"))
 TV = f"http://{TV_IP}:{TV_PORT}"
 
 # Clean brand icons: favicon first, ECP channel art as fallback.
+HELPER_DIR = os.path.dirname(os.path.abspath(__file__))
+LAYOUT_FILE = os.path.join(HELPER_DIR, "layout.json")
+PHOTOS_DIR = os.path.join(HELPER_DIR, "photos")
+
+
+def load_layout():
+    """The launcher's layout, re-read on every request so edits apply on the next launch."""
+    try:
+        with open(LAYOUT_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return None
+
+
+def local_photo():
+    """Fallback wallpaper source: helper/photos. Immich stays optional."""
+    try:
+        names = [n for n in os.listdir(PHOTOS_DIR) if n.lower().endswith((".jpg", ".jpeg", ".png"))]
+    except FileNotFoundError:
+        raise RuntimeError("no Immich key and no helper/photos folder")
+    if not names:
+        raise RuntimeError("no Immich key and helper/photos holds no images")
+    path = os.path.join(PHOTOS_DIR, random.choice(names))
+    with open(path, "rb") as f:
+        body = f.read()
+    return body, ("image/png" if path.lower().endswith(".png") else "image/jpeg")
+
+
 DOMAINS = {
     "837": "youtube.com",
     "12": "netflix.com",
@@ -281,7 +309,7 @@ _photo_lock = threading.Lock()
 
 def random_photo():
     if not IMMICH_API_KEY:
-        raise RuntimeError("IMMICH_API_KEY is not configured")
+        return local_photo()
     with _photo_lock:
         if not _photo_cache["ids"] or time.time() - _photo_cache["at"] > 60:
             payload: dict[str, Any] = {"size": 24}
@@ -354,7 +382,9 @@ class Handler(BaseHTTPRequestHandler):
                 STATE["pause_until"] = time.time() + seconds
                 self.send_json(200, {"auto_launch": STATE["auto_launch"], "paused_for": seconds})
             elif self.path == "/apps":
-                self.send_json(200, {"apps": get_apps()})
+                self.send_json(200, {"apps": get_apps(), "layout": load_layout()})
+            elif self.path == "/layout":
+                self.send_json(200, load_layout() or {})
             elif self.path == "/tvstats":
                 self.send_json(200, get_tvstats())
             elif self.path == "/restart":

@@ -841,7 +841,7 @@
     document.querySelectorAll('[data-date]').forEach(function(el){ el.textContent = date; });
   }
 
-  var HELPER = 'http://192.168.1.50:8099';
+  var HELPER = 'http://192.168.1.103:8099';
 
   var monitorOn = true;
   try { if (localStorage.getItem('lhd-monitor') === '0') monitorOn = false; } catch (e) {}

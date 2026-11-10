@@ -445,12 +445,65 @@ sub onApps()
     end for
 
     loadCustomizations()
+    if data.layout <> invalid then applyLayout(data.layout)
     buildLists()
     renderDock()
     renderDrawer()
     updateFocus()
     m.menuItems[2] = "Photo interval: " + intervalLabel(m.bgInterval)
     updateMenu()
+end sub
+
+
+' Layout file support (D5). The helper serves layout.json inside /apps, so the dock
+' order, drawer order, names, icons, background and photo interval can all be edited
+' from the PC with no rebuild. Anything absent or unparsable falls back to the
+' registry values that the remote writes, so the on-TV customisation still works.
+sub applyLayout(layout as Dynamic)
+    if layout = invalid then return
+    if Type(layout) <> "roAssociativeArray" then return
+
+    if layout.dock <> invalid and Type(layout.dock) = "roArray" then
+        ids = []
+        for each v in layout.dock
+            if Type(v) = "String" or Type(v) = "roString" then ids.Push(v)
+        end for
+        if ids.Count() > 0 then m.favIds = ids
+    end if
+
+    if layout.drawer <> invalid and Type(layout.drawer) = "roArray" then
+        ids = []
+        for each v in layout.drawer
+            if Type(v) = "String" or Type(v) = "roString" then ids.Push(v)
+        end for
+        m.drawerOrder = ids
+    end if
+
+    if layout.apps <> invalid and Type(layout.apps) = "roAssociativeArray" then
+        for each id in layout.apps.Keys()
+            meta = layout.apps[id]
+            if meta <> invalid and Type(meta) = "roAssociativeArray" then
+                if meta.name <> invalid and Type(meta.name) = "String" then
+                    m.customNames[id] = meta.name
+                end if
+                if meta.icon <> invalid and Type(meta.icon) = "String" then
+                    m.customIcons[id] = meta.icon
+                end if
+            end if
+        end for
+    end if
+
+    if layout.background <> invalid and Type(layout.background) = "String" then
+        if layout.background <> "" then m.bg.uri = layout.background
+    end if
+
+    pi = layout.photo_interval
+    if pi <> invalid then
+        t = Type(pi)
+        if t = "Integer" or t = "roInteger" or t = "Float" or t = "roFloat" then
+            if pi >= 10 then m.bgInterval = pi
+        end if
+    end if
 end sub
 
 sub buildLists()
