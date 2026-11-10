@@ -21,6 +21,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any
 from xml.etree import ElementTree as ET
 
+import art
+
 TV_IP = os.environ.get("TV_IP", "192.168.1.50")
 TV_PORT = os.environ.get("TV_PORT", "8060")
 IMMICH_URL = os.environ.get("IMMICH_URL", "http://192.168.1.50:2283").rstrip("/")
@@ -53,6 +55,53 @@ def load_layout():
             return json.load(f)
     except Exception:
         return None
+
+
+_cycle = {"i": 0}
+_art_cache = {}
+_art_lock = threading.Lock()
+
+
+def wallpaper_sources():
+    lay = load_layout() or {}
+    lst = lay.get("wallpaper")
+    if isinstance(lst, list) and lst:
+        return [str(x) for x in lst]
+    return ["photos"]
+
+
+def weather_image(spec, ttl=300):
+    """One sky per place, cached: a render costs about a second of Chrome."""
+    place = art.find_place(spec)
+    if not place:
+        raise RuntimeError("unknown place %r - add it to helper/art.py PLACES" % spec)
+    key = place["name"]
+    with _art_lock:
+        hit = _art_cache.get(key)
+        if hit and time.time() - hit[0] < ttl:
+            return hit[1]
+    body = art.weather_png(place)
+    with _art_lock:
+        _art_cache[key] = (time.time(), body)
+    return body
+
+
+def next_wallpaper():
+    """Round-robin over layout.json "wallpaper", so sources alternate as the TV asks."""
+    items = wallpaper_sources()
+    with _art_lock:
+        i = _cycle["i"] % len(items)
+        _cycle["i"] = (i + 1) % len(items)
+    spec = items[i].strip()
+    if spec.startswith("weather:"):
+        return weather_image(spec.split(":", 1)[1])
+    if spec in ("solid", "none", "off"):
+        return art.solid_png()
+    if spec in ("photos", "folder"):
+        return local_photo()
+    if spec == "immich":
+        return random_photo()
+    raise RuntimeError("unknown wallpaper source %r" % spec)
 
 
 def hermes_status():
@@ -535,8 +584,14 @@ class Handler(BaseHTTPRequestHandler):
                 status, _, _ = launch_app(app_id)
                 self.send_json(200, {"ok": status in (200, 204), "status": status})
             elif self.path == "/photo" or self.path.startswith("/photo?"):
-                body, ctype = random_photo()
-                self.send_payload(200, body, ctype)
+                self.send_payload(200, next_wallpaper(), "image/png")
+            elif self.path.startswith("/art"):
+                q = urllib.parse.parse_qs(self.path.split("?", 1)[1]) if "?" in self.path else {}
+                src = (q.get("src") or ["weather"])[0]
+                place = (q.get("place") or ["Kyoto"])[0]
+                if src != "weather":
+                    raise RuntimeError("only src=weather today, got %r" % src)
+                self.send_payload(200, weather_image(place), "image/png")
             else:
                 self.send_json(404, {"error": "not found"})
         except urllib.error.HTTPError as exc:
