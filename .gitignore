@@ -21,3 +21,6 @@ venv/
 *.log
 node_modules/
 .msgbox/
+
+# bsc transpile staging
+out/
