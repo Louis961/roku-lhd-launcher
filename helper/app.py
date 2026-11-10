@@ -8,6 +8,10 @@ import io
 import json
 import os
 import random
+import shutil
+import sqlite3
+import subprocess
+import tempfile
 import threading
 import time
 import urllib.error
@@ -29,6 +33,14 @@ PORT = int(os.environ.get("PORT", "8099"))
 TV = f"http://{TV_IP}:{TV_PORT}"
 
 # Clean brand icons: favicon first, ECP channel art as fallback.
+KANBAN_DB = os.environ.get(
+    "KANBAN_DB",
+    r"C:/Users/louis/AppData/Local/hermes/kanban/boards/axiom/kanban.db")
+CHROME = os.environ.get(
+    "CHROME",
+    r"C:/Program Files/Google/Chrome/Application/chrome.exe")
+SNAP_URL = os.environ.get("SNAP_URL", "http://127.0.0.1:8787/")
+
 HELPER_DIR = os.path.dirname(os.path.abspath(__file__))
 LAYOUT_FILE = os.path.join(HELPER_DIR, "layout.json")
 PHOTOS_DIR = os.path.join(HELPER_DIR, "photos")
@@ -41,6 +53,98 @@ def load_layout():
             return json.load(f)
     except Exception:
         return None
+
+
+def hermes_status():
+    """Board state for the TV tile. Read-only connection, so a locked board cannot stall it."""
+    out = {"counts": {}, "running": [], "blocked": [], "recent": [],
+           "generated": time.strftime("%H:%M:%S")}
+    try:
+        con = sqlite3.connect("file:%s?mode=ro" % KANBAN_DB, uri=True, timeout=2)
+        con.row_factory = sqlite3.Row
+        for row in con.execute("select status, count(*) n from tasks group by status"):
+            if row["status"] != "archived":
+                out["counts"][row["status"]] = row["n"]
+        for row in con.execute(
+                "select title, assignee from tasks where status='running' "
+                "order by started_at desc limit 4"):
+            out["running"].append({"title": row["title"], "who": row["assignee"] or ""})
+        for row in con.execute(
+                "select title, block_kind from tasks where status='blocked' "
+                "order by priority desc limit 4"):
+            out["blocked"].append({"title": row["title"], "kind": row["block_kind"] or ""})
+        for row in con.execute(
+                "select title, completed_at from tasks where status='done' "
+                "order by completed_at desc limit 4"):
+            out["recent"].append({"title": row["title"], "at": (row["completed_at"] or "")[:16]})
+        con.close()
+    except Exception as exc:
+        out["error"] = str(exc)
+    return out
+
+
+_snap = {"at": 0.0, "body": None}
+_snap_lock = threading.Lock()
+
+
+def snapshot(url=None, max_age=4.0):
+    """A real screenshot of a local web page, cached for a few seconds.
+
+    A Roku channel cannot render HTML, but it can render a PNG, so the closest thing to
+    "your web app on the TV" is: render the page here, show the picture there.
+
+    Chrome writes the file and then keeps running when the page holds an open connection,
+    so this waits for the file rather than for the process to exit, then kills it.
+    """
+    url = url or SNAP_URL
+    with _snap_lock:
+        if _snap["body"] and time.time() - _snap["at"] < max_age:
+            return _snap["body"]
+        if not os.path.isfile(CHROME):
+            raise RuntimeError("chrome not found at %s" % CHROME)
+        fd, path = tempfile.mkstemp(suffix=".png")
+        os.close(fd)
+        os.remove(path)
+        profile = tempfile.mkdtemp(prefix="rokusnap-")
+        proc = subprocess.Popen(
+            [CHROME, "--headless=new", "--no-sandbox", "--disable-gpu", "--hide-scrollbars",
+             "--no-first-run", "--no-default-browser-check", "--disable-extensions",
+             "--user-data-dir=" + profile, "--window-size=1920,1080",
+             "--screenshot=" + path, url],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+            creationflags=0x08000000)
+        size = 0
+        deadline = time.time() + 20
+        try:
+            while time.time() < deadline:
+                time.sleep(0.25)
+                try:
+                    now = os.path.getsize(path)
+                except OSError:
+                    now = 0
+                if now > 1024 and now == size:
+                    break
+                size = now
+            if not os.path.exists(path):
+                raise RuntimeError("chrome produced no screenshot within 20 s")
+            with open(path, "rb") as f:
+                body = f.read()
+            if not body:
+                raise RuntimeError("screenshot file was empty")
+            _snap["body"] = body
+            _snap["at"] = time.time()
+            return body
+        finally:
+            try:
+                proc.kill()
+            except Exception:
+                pass
+            for target in (path,):
+                try:
+                    os.remove(target)
+                except OSError:
+                    pass
+            shutil.rmtree(profile, ignore_errors=True)
 
 
 def local_photo():
@@ -385,6 +489,14 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_json(200, {"apps": get_apps(), "layout": load_layout()})
             elif self.path == "/layout":
                 self.send_json(200, load_layout() or {})
+            elif self.path == "/hermes":
+                self.send_json(200, hermes_status())
+            elif self.path == "/snapshot" or self.path.startswith("/snapshot?"):
+                url = None
+                if "?" in self.path:
+                    q = urllib.parse.parse_qs(self.path.split("?", 1)[1])
+                    url = (q.get("url") or [None])[0]
+                self.send_payload(200, snapshot(url), "image/png")
             elif self.path == "/tvstats":
                 self.send_json(200, get_tvstats())
             elif self.path == "/restart":
