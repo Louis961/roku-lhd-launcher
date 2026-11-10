@@ -42,7 +42,6 @@ def _load_dotenv():
 _load_dotenv()
 
 
-import art
 
 TV_IP = os.environ.get("TV_IP", "192.168.1.50")
 TV_PORT = os.environ.get("TV_PORT", "8060")
@@ -91,22 +90,21 @@ def wallpaper_sources():
     return ["photos"]
 
 
-def weather_image(spec, ttl=300):
-    """One sky per place, cached: a render costs about a second of Chrome."""
-    place = art.find_place(spec)
-    if not place:
-        raise RuntimeError("unknown place %r - add it to helper/art.py PLACES" % spec)
-    key = place["name"]
-    with _art_lock:
-        hit = _art_cache.get(key)
-        if hit and time.time() - hit[0] < ttl:
-            return hit[1]
-    wx = art.weather(place)
-    body = art.weather_png(place, wx)
-    if wx.get("ok"):
-        with _art_lock:
-            _art_cache[key] = (time.time(), body)
-    return body
+def solid_png(rgb=(10, 10, 15), size=(8, 8)):
+    """A flat colour as a PNG, stdlib only: the no-photo background."""
+    import struct
+    import zlib
+    w, h = size
+    raw = (bytes([0]) + bytes(rgb) * w) * h
+
+    def chunk(tag, payload):
+        body = tag + payload
+        return (struct.pack(">I", len(payload)) + body
+                + struct.pack(">I", zlib.crc32(body) & 0xffffffff))
+
+    return (bytes([137, 80, 78, 71, 13, 10, 26, 10])
+            + chunk(b"IHDR", struct.pack(">IIBBBBB", w, h, 8, 2, 0, 0, 0))
+            + chunk(b"IDAT", zlib.compress(raw)) + chunk(b"IEND", b""))
 
 
 def next_wallpaper():
@@ -117,9 +115,10 @@ def next_wallpaper():
         _cycle["i"] = (i + 1) % len(items)
     spec = items[i].strip()
     if spec.startswith("weather:"):
-        return weather_image(spec.split(":", 1)[1])
+        raise RuntimeError("the weather renderer was removed with helper/art.py; "
+                           "Daybreak draws the weather on the TV now")
     if spec in ("solid", "none", "off"):
-        return art.solid_png()
+        return solid_png()
     if spec in ("photos", "folder"):
         return local_photo()
     if spec == "immich":
@@ -608,13 +607,6 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_json(200, {"ok": status in (200, 204), "status": status})
             elif self.path == "/photo" or self.path.startswith("/photo?"):
                 self.send_payload(200, next_wallpaper(), "image/png")
-            elif self.path.startswith("/art"):
-                q = urllib.parse.parse_qs(self.path.split("?", 1)[1]) if "?" in self.path else {}
-                src = (q.get("src") or ["weather"])[0]
-                place = (q.get("place") or ["Kyoto"])[0]
-                if src != "weather":
-                    raise RuntimeError("only src=weather today, got %r" % src)
-                self.send_payload(200, weather_image(place), "image/png")
             else:
                 self.send_json(404, {"error": "not found"})
         except urllib.error.HTTPError as exc:
