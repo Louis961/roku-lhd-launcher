@@ -16,6 +16,8 @@ import argparse
 import getpass
 import io
 import os
+import re
+import subprocess
 import sys
 import urllib.error
 import urllib.request
@@ -50,9 +52,47 @@ def build():
     return ZIP
 
 
+CREATE_NO_WINDOW = 0x08000000
+
+
+def password_from_registry():
+    """Read ROKU_DEV_PASS from the user environment, for shells that started before setx ran."""
+    if os.name != "nt":
+        return None
+    try:
+        out = subprocess.run(["reg", "query", r"HKCU\Environment", "/v", "ROKU_DEV_PASS"],
+                             capture_output=True, creationflags=CREATE_NO_WINDOW)
+        m = re.search(r"ROKU_DEV_PASS\s+REG_SZ\s+(.+)", out.stdout.decode("utf-8", "replace"))
+        return m.group(1).strip() if m else None
+    except Exception:
+        return None
+
+
+def set_password():
+    """Store the developer password once, as a user environment variable."""
+    pw = getpass.getpass("Roku developer password (typing hidden): ").strip()
+    if not pw:
+        raise SystemExit("nothing stored - empty input")
+    if os.name != "nt":
+        raise SystemExit("this only stores it on Windows; elsewhere export ROKU_DEV_PASS yourself")
+    r = subprocess.run(["setx", "ROKU_DEV_PASS", pw], capture_output=True,
+                       creationflags=CREATE_NO_WINDOW)
+    stored = password_from_registry()
+    ok = stored == pw
+    print("setx exit %d, verified for this user: %s (length %d)"
+          % (r.returncode, ok, len(pw)))
+    if not ok:
+        raise SystemExit("could not verify the variable; set ROKU_DEV_PASS manually")
+    print("Every future run of sideload.py uses it. No file to keep, no prompt again.")
+
+
 def password():
     pw = os.environ.get("ROKU_DEV_PASS")
     if pw:
+        return pw
+    pw = password_from_registry()
+    if pw:
+        print("password read from ROKU_DEV_PASS (user environment)")
         return pw
     if os.path.isfile(PASS_FILE):
         with open(PASS_FILE, "r", encoding="utf-8", errors="replace") as f:
@@ -118,9 +158,14 @@ def launch():
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--build", action="store_true")
+    ap.add_argument("--set-password", action="store_true",
+                    help="store the Roku developer password as ROKU_DEV_PASS, once")
     ap.add_argument("--install", action="store_true")
     ap.add_argument("--launch", action="store_true")
     a = ap.parse_args()
+    if a.set_password:
+        set_password()
+        raise SystemExit(0)
     z = build()
     if a.install:
         install(z)
