@@ -13,10 +13,10 @@ sub buildRadar(g as object, d as object)
     if frames.Count() > 0 then frames[frames.Count() - 1].poster.visible = true
     m.radarFrames = frames
     m.radarFrame = frames.Count() - 1
-    uiImage(g, "pkg:/images/ring_radar.png", 703, 283, 514, 514, "#F4F1EA", 0.35)
-    uiDot(g, 960, 540, 40, "#F4A259", 0.18)
-    uiDot(g, 960, 540, 13, "#0B1120")
-    uiDot(g, 960, 540, 9, "#F4A259")
+    uiImage(g, "pkg:/images/ring_radar.png", 703, 283, 514, 514, "#F4F3F0", 0.35)
+    uiDot(g, 960, 540, 40, "#FFD166", 0.18)
+    uiDot(g, 960, 540, 13, "#0A0A0F")
+    uiDot(g, 960, 540, 9, "#FFD166")
     ' town and water labels from the place, skipping any that would sit under a card
     view = radarView(d.home.lat, d.home.lon)
     cards = [[gx(1), 64, gx(1) + gw(4), 314], [gx(9), 64, 1808, 314], [gx(1), 876, gx(1) + gw(6), 1016], [gx(7), 876, 1808, 1016]]
@@ -34,8 +34,8 @@ sub buildRadar(g as object, d as object)
             hitBox = [lx, px[1] - 15, lx + w, px[1] + 15]
             if align = "right" then hitBox = [lx - w, px[1] - 15, lx, px[1] + 15]
             if onMap(px, hitBox, cards) and Abs(px[0] - 960) + Abs(px[1] - 540) > 60
-                uiDot(g, px[0], px[1], 5, "#E1E4EC")
-                if align = "right" then uiText(g, lx, px[1] - 15, pl.name, 24, 600, "Manrope", "#E1E4EC", w, "right") else uiText(g, lx, px[1] - 15, pl.name, 24, 600, "Manrope", "#E1E4EC")
+                uiDot(g, px[0], px[1], 5, "#F4F3F0CC")
+                if align = "right" then uiText(g, lx, px[1] - 15, pl.name, 24, 600, "Manrope", "#F4F3F0CC", w, "right") else uiText(g, lx, px[1] - 15, pl.name, 24, 600, "Manrope", "#F4F3F0CC")
             end if
         end for
         if rp.water <> invalid
@@ -47,7 +47,7 @@ sub buildRadar(g as object, d as object)
         end if
     end if
     uiText(g, 984, 516, d.place.town, 34, 600, "Outfit")
-    uiText(g, 960, 244, "25 mi", 24, 600, "Manrope", "#C9CEDA", 120, "center")
+    uiText(g, 960, 244, "25 mi", 24, 600, "Manrope", "#F4F3F0CC", 120, "center")
     ' Say plainly whether the map is clear or the radar didn't load, so an
     ' empty map never looks like a broken one.
     ' (the TV can't read the frames' pixels, so "no rain" comes from the forecast)
@@ -72,37 +72,37 @@ sub buildRadar(g as object, d as object)
             sub2 = "Watch for storms moving toward " + d.place.town + ". Details are on the alert screen."
         end if
     end for
-    uiCard(g, gx(1), 64, gw(4), 250, "#0B1120", "#1F2A44", 28, 0.92)
+    uiCard(g, gx(1), 64, gw(4), 250, "#0A0A0F", "#F4F3F066", 28, 0.92)
     dotColor = "#9EC79B"
-    if d.rainSoon then dotColor = "#F4A259"
+    if d.rainSoon then dotColor = "#FFD166"
     uiDot(g, gx(1) + 38, 108, 7, dotColor)
     uiLabel(g, gx(1) + 58, 96, "Live radar · West Georgia")
-    uiText(g, gx(1) + 40, 134, status, 46, 500, "Outfit", "#F4F1EA", gw(4) - 80)
-    uiText(g, gx(1) + 40, 206, sub2, 24, 400, "Manrope", "#C9CEDA", gw(4) - 80, "left", 2)
+    uiText(g, gx(1) + 40, 134, status, 46, 500, "Outfit", "#F4F3F0", gw(4) - 80)
+    uiText(g, gx(1) + 40, 206, sub2, 24, 400, "Manrope", "#F4F3F0CC", gw(4) - 80, "left", 2)
     warn = d.alerts.Count() > 0
-    fill = "#0B1120"
+    fill = "#0A0A0F"
     if warn then fill = "#5C0A18"
     ax = gx(9)
-    uiCard(g, ax, 64, gw(4), 250, fill, "#1F2A44", 28, 0.92)
+    uiCard(g, ax, 64, gw(4), 250, fill, "#F4F3F066", 28, 0.92)
     uiLabel(g, ax + 40, 96, "Alerts · " + d.place.area)
     if warn
         yy = 136
         for each a in d.alerts
             if yy < 280
-                l = uiText(g, ax + 40, yy, a.event, 32, 600, "Manrope", "#F4F1EA", gw(4) - 80, "left", 2)
+                l = uiText(g, ax + 40, yy, a.event, 32, 600, "Manrope", "#F4F3F0", gw(4) - 80, "left", 2)
                 yy = yy + uiHeight(l, 32) + 8
             end if
         end for
     else if d.alertsKnown = false
         uiText(g, ax + 40, 136, "Unavailable", 40, 500, "Outfit")
-        uiText(g, ax + 40, 200, "Couldn't reach the National Weather Service. Check local news in severe weather.", 24, 400, "Manrope", "#F4A259", gw(4) - 80, "left", 3)
+        uiText(g, ax + 40, 200, "Couldn't reach the National Weather Service. Check local news in severe weather.", 24, 400, "Manrope", "#FFD166", gw(4) - 80, "left", 3)
     else
         uiText(g, ax + 40, 136, "None in effect", 40, 500, "Outfit")
-        uiText(g, ax + 40, 206, "National Weather Service, Peachtree City", 24, 400, "Manrope", "#A9B1C4", gw(4) - 80, "left", 2)
+        uiText(g, ax + 40, 206, "National Weather Service, Peachtree City", 24, 400, "Manrope", "#F4F3F0A8", gw(4) - 80, "left", 2)
     end if
-    uiCard(g, gx(1), 876, gw(6), 140, "#0B1120", "#1F2A44", 28, 0.92)
+    uiCard(g, gx(1), 876, gw(6), 140, "#0A0A0F", "#F4F3F066", 28, 0.92)
     uiText(g, gx(1) + 40, 898, "Past 2 hours", 24, 600)
-    m.radarTimeLabel = uiText(g, gx(1) + gw(6) - 40, 898, "", 24, 700, "Manrope", "#F4A259", 300, "right")
+    m.radarTimeLabel = uiText(g, gx(1) + gw(6) - 40, 898, "", 24, 700, "Manrope", "#FFD166", 300, "right")
     m.radarSegs = []
     n = frames.Count()
     if n > 0
@@ -112,7 +112,7 @@ sub buildRadar(g as object, d as object)
         end for
     end if
     lx0 = gx(7)
-    uiCard(g, lx0, 876, gw(6), 140, "#0B1120", "#1F2A44", 28, 0.92)
+    uiCard(g, lx0, 876, gw(6), 140, "#0A0A0F", "#F4F3F066", 28, 0.92)
     uiLabel(g, lx0 + 40, 898, "Precipitation")
     ' colors sampled from MRMS frames: blue for drizzle and very light rain up to magenta for hail
     legend = [["Very light", "#4660A0", "#5BA5CA"], ["Light", "#02FD02", "#01C501"], ["Moderate", "#FDF802", "#FD9500"], ["Heavy", "#FD0000", "#BC0000"], ["Hail", "#F800FD", "#9854C6"]]
@@ -121,7 +121,7 @@ sub buildRadar(g as object, d as object)
         lx = lx0 + 40 + j * (lw + 16)
         uiRect(g, lx, 944, lw / 2, 14, legend[j][1])
         uiRect(g, lx + lw / 2, 944, lw / 2, 14, legend[j][2])
-        uiText(g, lx, 966, legend[j][0], 24, 400, "Manrope", "#C9CEDA", Int(lw))
+        uiText(g, lx, 966, legend[j][0], 24, 400, "Manrope", "#F4F3F0CC", Int(lw))
     end for
     showRadarFrame(m.radarFrame)
 end sub

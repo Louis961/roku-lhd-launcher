@@ -1,8 +1,8 @@
 ' Screens: Game recap and Game day.
 
 sub buildRecap(g as object, d as object)
-    uiWallpaper(g, d, "recap", "#0B1120")
-    header(g, "GAME RECAP · " + UCase(tLongDate(d.now)), "How your teams did", "#F4A259", false)
+    uiWallpaper(g, d, "recap", "#0A0A0F")
+    header(g, "GAME RECAP · " + UCase(tLongDate(d.now)), "How your teams did", "#FFD166", false)
     top = 246
     r = d.rivalry
     hero = invalid
@@ -18,7 +18,7 @@ sub buildRecap(g as object, d as object)
         fans[r.loser] = fansOf(d, r.loser)
         win = teamNamed(d, r.winner)
         color = "#5C0A18"
-        accent = "#F4F1EA"
+        accent = "#F4F3F0"
         if win <> invalid
             color = win.color
             if win.accent <> invalid then accent = win.accent
@@ -27,20 +27,20 @@ sub buildRecap(g as object, d as object)
         teamLogo(g, logoOf(d, r.winner), gx(1) + gw(6) + 40 - 500, top + 230, 460, 0.12)
         uiLabel(g, gx(1) + 56, top + 54, "House divided · final", 24, accent)
         uiText(g, gx(1) + 56, top + 120, r.winner + " " + r.hi.ToStr(), 120, 600, "Outfit")
-        uiText(g, gx(1) + 56, top + 280, r.loser + " " + r.lo.ToStr(), 80, 400, "Outfit", "#C9CEDA")
+        uiText(g, gx(1) + 56, top + 280, r.loser + " " + r.lo.ToStr(), 80, 400, "Outfit", "#F4F3F0CC")
         brag = r.winner + " fans have bragging rights."
         if fans[r.winner] <> "" then brag = fans[r.winner] + " have bragging rights."
         if fans[r.loser] <> "" then brag = brag + " " + fans[r.loser] + ", there's always next year."
-        uiText(g, gx(1) + 56, top + 460, brag, 34, 500, "Manrope", "#F4F1EA", gw(6) - 72, "left", 3)
-        uiText(g, gx(1) + 56, top + 690, r.host + " hosted · " + r.network, 26, 400, "Manrope", "#C9CEDA", gw(6) - 72)
+        uiText(g, gx(1) + 56, top + 460, brag, 34, 500, "Manrope", "#F4F3F0", gw(6) - 72, "left", 3)
+        uiText(g, gx(1) + 56, top + 690, r.host + " hosted · " + r.network, 26, 400, "Manrope", "#F4F3F0CC", gw(6) - 72)
     else if hero <> invalid
         uiCard(g, gx(1), top, gw(6) + 40, 770, hero.color, "", 32)
         teamLogo(g, hero.logo, gx(1) + gw(6) + 40 - 500, top + 270, 460, 0.12)
         res = "Loss · "
         if hero.won then res = "Win · "
-        uiLabel(g, gx(1) + 56, top + 54, res + hero.team, 24, "#F4F1EA")
+        uiLabel(g, gx(1) + 56, top + 54, res + hero.team, 24, "#F4F3F0")
         uiText(g, gx(1) + 56, top + 140, hero.score, 190, 600, "Outfit")
-        uiText(g, gx(1) + 56, top + 400, hero.detail, 36, 600, "Manrope", "#F4F1EA", gw(6) - 72)
+        uiText(g, gx(1) + 56, top + 400, hero.detail, 36, 600, "Manrope", "#F4F3F0", gw(6) - 72)
     end if
     rx = gx(7) + 40
     rw = 1808 - rx
@@ -63,23 +63,23 @@ sub buildRecap(g as object, d as object)
             uiText(g, rx + 70, yy + 5, wl, 24, 800, "Manrope", fg, 60, "center")
             label = f.team + " " + f.detail
             if not f.pro then label = f.team + " " + sportCase(f.detail)
-            uiText(g, rx + 124, yy + 4, label, 26, 600, "Manrope", "#F4F1EA", rw - 300)
-            uiText(g, rx + rw - 40, yy, f.score, 32, 400, "Outfit", "#F4F1EA", 150, "right")
+            uiText(g, rx + 124, yy + 4, label, 26, 600, "Manrope", "#F4F3F0", rw - 300)
+            uiText(g, rx + rw - 40, yy, f.score, 32, 400, "Outfit", "#F4F3F0", 150, "right")
             yy = yy + 64
             n = n + 1
         end if
     end for
-    if n = 0 then uiText(g, rx + 40, yy, "No other finals in the last day and a half.", 26, 400, "Manrope", "#A9B1C4", rw - 80)
+    if n = 0 then uiText(g, rx + 40, yy, "No other finals in the last day and a half.", 26, 400, "Manrope", "#F4F3F0A8", rw - 80)
     uiCard(g, rx, top + 552, rw, 218)
     uiLabel(g, rx + 40, top + 588, "Season records")
     i = 0
     for each t in recordTeams(d)
         label = t.name
         if fansOf(d, t.name) <> "" then label = label + " (" + fansOf(d, t.name) + ")"
-        uiText(g, rx + 40, top + 636 + i * 56, label, 26, 600, "Manrope", "#F4F1EA", rw - 280)
+        uiText(g, rx + 40, top + 636 + i * 56, label, 26, 600, "Manrope", "#F4F3F0", rw - 280)
         rec = d.records[t.key]
         if rec = invalid then rec = "—"
-        uiText(g, rx + rw - 40, top + 636 + i * 56, rec, 30, 400, "Outfit", "#F4F1EA", 200, "right")
+        uiText(g, rx + rw - 40, top + 636 + i * 56, rec, 30, 400, "Outfit", "#F4F3F0", 200, "right")
         i = i + 1
     end for
 end sub
@@ -127,7 +127,7 @@ end function
 
 sub buildGameday(g as object, d as object)
     games = soonGames(d)
-    uiRect(g, 0, 0, 1920, 1080, "#0B1120")
+    uiRect(g, 0, 0, 1920, 1080, "#0A0A0F")
     panels = []
     for each gm in games
         if panels.Count() < 2 then panels.Push(gm)
@@ -156,23 +156,23 @@ sub buildGameday(g as object, d as object)
         lbl = "GAME DAY"
         if gm.state = "in" then lbl = "ON NOW"
         if divided then lbl = lbl + " · HOUSE DIVIDED"
-        uiText(g, tx, 72, lbl, 24, 700, "Manrope", "#F4F1EA", Int(pw) - 224, align)
+        uiText(g, tx, 72, lbl, 24, 700, "Manrope", "#F4F3F0", Int(pw) - 224, align)
         size = 160
         if panels.Count() = 2 then size = 132
-        uiText(g, tx, 110, gm.name, size, 600, "Outfit", "#F4F1EA", Int(pw) - 224, align)
-        uiText(g, tx, 130 + size + 20, gm.detail, 34, 500, "Manrope", "#F4F1EA", Int(pw) - 224, align)
+        uiText(g, tx, 110, gm.name, size, 600, "Outfit", "#F4F3F0", Int(pw) - 224, align)
+        uiText(g, tx, 130 + size + 20, gm.detail, 34, 500, "Manrope", "#F4F3F0", Int(pw) - 224, align)
         if gm.state = "in"
-            uiText(g, tx, 520, gm.my + "–" + gm.their, 120, 500, "Outfit", "#F4F1EA", Int(pw) - 224, align)
-            if gm.status <> invalid and gm.status <> "" then uiText(g, tx, 400, gm.status, 34, 600, "Manrope", "#F4F1EA", Int(pw) - 224, align)
+            uiText(g, tx, 520, gm.my + "–" + gm.their, 120, 500, "Outfit", "#F4F3F0", Int(pw) - 224, align)
+            if gm.status <> invalid and gm.status <> "" then uiText(g, tx, 400, gm.status, 34, 600, "Manrope", "#F4F3F0", Int(pw) - 224, align)
         else
-            uiText(g, tx, 540, tClock(gm.start), 100, 300, "Outfit", "#F4F1EA", Int(pw) - 224, align)
+            uiText(g, tx, 540, tClock(gm.start), 100, 300, "Outfit", "#F4F3F0", Int(pw) - 224, align)
         end if
-        if gm.network <> "" then uiText(g, tx, 680, "on " + gm.network, 30, 600, "Manrope", "#F4F1EA", Int(pw) - 224, align)
-        if gm.wx <> invalid then uiText(g, tx, 728, "Game time: " + gameWxText(gm.wx), 30, 500, "Manrope", "#F4F1EA", Int(pw) - 224, align)
+        if gm.network <> "" then uiText(g, tx, 680, "on " + gm.network, 30, 600, "Manrope", "#F4F3F0", Int(pw) - 224, align)
+        if gm.wx <> invalid then uiText(g, tx, 728, "Game time: " + gameWxText(gm.wx), 30, 500, "Manrope", "#F4F3F0", Int(pw) - 224, align)
     end for
     if panels.Count() = 1
         delta = panels[0].start - d.now
-        if delta > 0 then uiText(g, 1808, 580, "Kickoff in " + (delta \ 3600).ToStr() + " h " + ((delta mod 3600) \ 60).ToStr() + " m", 40, 500, "Outfit", "#F4F1EA", 700, "right")
+        if delta > 0 then uiText(g, 1808, 580, "Kickoff in " + (delta \ 3600).ToStr() + " h " + ((delta mod 3600) \ 60).ToStr() + " m", 40, 500, "Outfit", "#F4F3F0", 700, "right")
     end if
     others = []
     for each gm in d.games
@@ -189,8 +189,8 @@ sub buildGameday(g as object, d as object)
         uiCard(g, x, 830, cw, 190)
         teamLogo(g, gm.logo, x + cw - 140, 856, 120, 0.18)
         uiCard(g, x + 36, 866, 18, 18, gm.color, "", 10)
-        uiText(g, x + 66, 856, gm.name, 26, 700, "Manrope", "#F4F1EA", cw - 100)
-        uiText(g, x + 36, 900, gameWhenShort(gm, d.today), 34, 400, "Outfit", "#F4F1EA", cw - 72)
-        uiText(g, x + 36, 958, gm.detail, 24, 400, "Manrope", "#A9B1C4", cw - 72)
+        uiText(g, x + 66, 856, gm.name, 26, 700, "Manrope", "#F4F3F0", cw - 100)
+        uiText(g, x + 36, 900, gameWhenShort(gm, d.today), 34, 400, "Outfit", "#F4F3F0", cw - 72)
+        uiText(g, x + 36, 958, gm.detail, 24, 400, "Manrope", "#F4F3F0A8", cw - 72)
     end for
 end sub

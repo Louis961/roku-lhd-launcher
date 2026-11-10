@@ -140,8 +140,8 @@ function buildScreen(id as string, d as object) as object
         end if
         tw = uiTextWidth(credit, text, 24)
         if tw > 680 then tw = 680
-        uiCard(credit, 1808 - tw - 18, 1026, tw + 36, 44, "#0B1120", "", 22, 0.72) ' readable on any photo
-        uiText(credit, 1808, 1032, text, 24, 400, "Manrope", "#C9CEDA", 680, "right")
+        uiCard(credit, 1808 - tw - 18, 1026, tw + 36, 44, "#0A0A0F", "", 22, 0.72) ' readable on any photo
+        uiText(credit, 1808, 1032, text, 24, 400, "Manrope", "#F4F3F0CC", 680, "right")
     end if
     return g
 end function

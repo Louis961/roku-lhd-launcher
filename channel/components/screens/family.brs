@@ -1,7 +1,7 @@
 ' Screens: School and Family board.
 
 sub buildSchool(g as object, d as object)
-    uiWallpaper(g, d, "school", "#0B1120")
+    uiWallpaper(g, d, "school", "#0A0A0F")
     schools = {}
     for each mem in d.members
         if mem.school <> invalid then schools[UCase(mem.school)] = true
@@ -21,11 +21,11 @@ sub buildSchool(g as object, d as object)
         uiText(g, gx(1) + 52, yy, tShortDate(e.start), 28, 700, "Manrope", "#7FB7E8")
         t = e.title
         if e.subtitle <> "" then t = t + " · " + e.subtitle
-        uiText(g, gx(1) + 52, yy + 38, t, 32, 600, "Manrope", "#F4F1EA", gw(6) - 64)
-        uiText(g, gx(1) + 52, yy + 82, tDayWord(e.start, d.today) + " · " + e.whoText, 24, 400, "Manrope", "#A9B1C4", gw(6) - 64)
+        uiText(g, gx(1) + 52, yy + 38, t, 32, 600, "Manrope", "#F4F3F0", gw(6) - 64)
+        uiText(g, gx(1) + 52, yy + 82, tDayWord(e.start, d.today) + " · " + e.whoText, 24, 400, "Manrope", "#F4F3F0A8", gw(6) - 64)
         yy = yy + 128
     end for
-    if items.Count() = 0 then uiText(g, gx(1) + 52, yy, "No school dates on the calendar this month.", 30, 400, "Manrope", "#A9B1C4", gw(6) - 64)
+    if items.Count() = 0 then uiText(g, gx(1) + 52, yy, "No school dates on the calendar this month.", 30, 400, "Manrope", "#F4F3F0A8", gw(6) - 64)
     kids = []
     for each mem in d.members
         if mem.school <> invalid then kids.Push(mem)
@@ -42,12 +42,12 @@ sub buildSchool(g as object, d as object)
         uiText(g, rx + 40, ky + 36, k.name, 48, 600, "Outfit")
         info = k.school + " · " + k.grade.ToStr() + "th grade"
         if k.band = true then info = info + " · marching band"
-        uiText(g, rx + 40, ky + 104, info, 24, 400, "Manrope", "#A9B1C4", rw - 80)
+        uiText(g, rx + 40, ky + 104, info, 24, 400, "Manrope", "#F4F3F0A8", rw - 80)
         nextShown = false
         for each e in items
             for each nm in e.who
                 if nm = k.name and not nextShown
-                    uiText(g, rx + 40, ky + 160, "Next: " + e.title + " (" + tDayWord(e.start, d.today) + ")", 26, 500, "Manrope", "#F4F1EA", rw - 80)
+                    uiText(g, rx + 40, ky + 160, "Next: " + e.title + " (" + tDayWord(e.start, d.today) + ")", 26, 500, "Manrope", "#F4F3F0", rw - 80)
                     nextShown = true
                 end if
             end for
@@ -57,9 +57,9 @@ sub buildSchool(g as object, d as object)
 end sub
 
 sub buildBoard(g as object, d as object)
-    uiWallpaper(g, d, "board", "#0B1120")
-    header(g, "FAMILY BOARD", "Notes for the " + d.household, "#F4A259", false)
-    uiText(g, 1808, 140, "Add an event called ""TV: your note"" to the family calendar", 24, 400, "Manrope", "#A9B1C4", 900, "right")
+    uiWallpaper(g, d, "board", "#0A0A0F")
+    header(g, "FAMILY BOARD", "Notes for the " + d.household, "#FFD166", false)
+    uiText(g, 1808, 140, "Add an event called ""TV: your note"" to the family calendar", 24, 400, "Manrope", "#F4F3F0A8", 900, "right")
     top = 246
     cw = gw(4)
     maxNotes = 4
@@ -71,8 +71,8 @@ sub buildBoard(g as object, d as object)
             y = top + (i \ 2) * 397
             uiCard(g, x, y, cw, 373, "#1B2433", "")
             uiRect(g, x + 28, y + 1, cw - 56, 6, n.color)
-            uiText(g, x + 40, y + 46, n.text, 44, 500, "Outfit", "#F4F1EA", cw - 80, "left", 4)
-            uiText(g, x + 40, y + 316, n.from, 24, 400, "Manrope", "#A9B1C4", cw - 80)
+            uiText(g, x + 40, y + 46, n.text, 44, 500, "Outfit", "#F4F3F0", cw - 80, "left", 4)
+            uiText(g, x + 40, y + 316, n.from, 24, 400, "Manrope", "#F4F3F0A8", cw - 80)
         end if
     end for
     if d.chores.Count() > 0
@@ -83,11 +83,11 @@ sub buildBoard(g as object, d as object)
         for each c in d.chores
             if yy < cy0 + 340
                 uiDot(g, gx(1) + 52, yy + 18, 9, c.color)
-                uiText(g, gx(1) + 76, yy, c.who, 30, 700, "Manrope", "#F4F1EA", 220)
-                uiText(g, gx(1) + 310, yy + 2, c.task, 28, 500, "Manrope", "#F4F1EA", gw(8) - 600)
+                uiText(g, gx(1) + 76, yy, c.who, 30, 700, "Manrope", "#F4F3F0", 220)
+                uiText(g, gx(1) + 310, yy + 2, c.task, 28, 500, "Manrope", "#F4F3F0", gw(8) - 600)
                 when = "Tomorrow: "
                 if c.every = "week" then when = "Next week: "
-                uiText(g, gx(1) + gw(8) - 40, yy + 4, when + c.next, 24, 400, "Manrope", "#A9B1C4", 260, "right")
+                uiText(g, gx(1) + gw(8) - 40, yy + 4, when + c.next, 24, 400, "Manrope", "#F4F3F0A8", 260, "right")
                 yy = yy + 64
             end if
         end for
@@ -100,8 +100,8 @@ sub buildBoard(g as object, d as object)
         if n > 3 then n = 3
         ch = 84 + n * 70
         uiCard(g, gx0, top, gw0, ch, "#1B2433", "")
-        uiRect(g, gx0 + 28, top + 1, gw0 - 56, 6, "#B3A6F2")
-        uiLabel(g, gx0 + 40, top + 34, "Counting down", 24, "#B3A6F2")
+        uiRect(g, gx0 + 28, top + 1, gw0 - 56, 6, "#F4F3F0A8")
+        uiLabel(g, gx0 + 40, top + 34, "Counting down", 24, "#F4F3F0A8")
         for i = 0 to n - 1
             c = d.countdowns[i]
             cy = top + 80 + i * 70
@@ -112,9 +112,9 @@ sub buildBoard(g as object, d as object)
                 days = "Today"
                 unit = ""
             end if
-            uiText(g, gx0 + 40, cy, days, 44, 500, "Outfit", "#F4F1EA", 130)
-            uiText(g, gx0 + 176, cy + 4, c.title, 26, 600, "Manrope", "#F4F1EA", gw0 - 216)
-            uiText(g, gx0 + 176, cy + 36, unit + " · " + tShortDate(c.day), 24, 400, "Manrope", "#A9B1C4", gw0 - 216)
+            uiText(g, gx0 + 40, cy, days, 44, 500, "Outfit", "#F4F3F0", 130)
+            uiText(g, gx0 + 176, cy + 4, c.title, 26, 600, "Manrope", "#F4F3F0", gw0 - 216)
+            uiText(g, gx0 + 176, cy + 36, unit + " · " + tShortDate(c.day), 24, 400, "Manrope", "#F4F3F0A8", gw0 - 216)
         end for
         gtop = top + ch + 24
     end if
@@ -123,10 +123,10 @@ sub buildBoard(g as object, d as object)
     yy = gtop + 98
     for i = 0 to d.groceries.Count() - 1
         if yy < top + 770 - 60
-            uiCard(g, gx0 + 40, yy + 4, 28, 28, "#131B2E", "#A9B1C4", 10)
-            uiText(g, gx0 + 88, yy, d.groceries[i], 28, 400, "Manrope", "#F4F1EA", gw0 - 128)
+            uiCard(g, gx0 + 40, yy + 4, 28, 28, "#0A0A0F", "#F4F3F0A8", 10)
+            uiText(g, gx0 + 88, yy, d.groceries[i], 28, 400, "Manrope", "#F4F3F0", gw0 - 128)
             yy = yy + 56
         end if
     end for
-    if d.groceries.Count() = 0 then uiText(g, gx0 + 40, yy, "Add ""Buy: milk, eggs"" to the family calendar", 24, 400, "Manrope", "#A9B1C4", gw0 - 80, "left", 3)
+    if d.groceries.Count() = 0 then uiText(g, gx0 + 40, yy, "Add ""Buy: milk, eggs"" to the family calendar", 24, 400, "Manrope", "#F4F3F0A8", gw0 - 80, "left", 3)
 end sub

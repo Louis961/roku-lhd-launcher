@@ -53,7 +53,7 @@ function buildNav(items as object, index as integer, paused as boolean) as objec
         color = "#5A6380"
         if i = index
             w = 40
-            color = "#F4A259"
+            color = "#FFD166"
         end if
         uiCard(g, x, 1040, w, 12, color, "", 10)
         x = x + w + 10
@@ -61,10 +61,10 @@ function buildNav(items as object, index as integer, paused as boolean) as objec
     name = screenTitles()[items[index]]
     if name = invalid then name = items[index]
     if paused then name = name + " · paused"
-    uiText(g, 960 - total / 2 - 24, 1030, name, 24, 600, "Manrope", "#C9CEDA", 500, "right")
-    track = uiRect(g, 0, 1076, 1920, 4, "#1F2A44", 0.8)
+    uiText(g, 960 - total / 2 - 24, 1030, name, 24, 600, "Manrope", "#F4F3F0CC", 500, "right")
+    track = uiRect(g, 0, 1076, 1920, 4, "#F4F3F066", 0.8)
     track.id = "navTrack"
-    bar = uiRect(g, 0, 1076, 0, 4, "#F4A259", 0.9)
+    bar = uiRect(g, 0, 1076, 0, 4, "#FFD166", 0.9)
     bar.id = "navProgress"
     return g
 end function
@@ -73,13 +73,13 @@ end function
 
 function buildHint() as object
     g = CreateObject("roSGNode", "Group")
-    uiCard(g, 460, 860, 1000, 150, "#070B14", "#F4A259", 28, 0.94)
-    uiLabel(g, 500, 884, "Remote", 24, "#F4A259")
+    uiCard(g, 460, 860, 1000, 150, "#07070B", "#FFD166", 28, 0.94)
+    uiLabel(g, 500, 884, "Remote", 24, "#FFD166")
     keys = [["Left / Right", "browse"], ["Play", "pause"], ["OK", "menu"], ["*", "diagnostics"]]
     for i = 0 to 3
         x = 500 + i * 236
-        uiText(g, x, 926, keys[i][0], 26, 700, "Manrope", "#F4F1EA", 220)
-        uiText(g, x, 962, keys[i][1], 24, 400, "Manrope", "#A9B1C4", 220)
+        uiText(g, x, 926, keys[i][0], 26, 700, "Manrope", "#F4F3F0", 220)
+        uiText(g, x, 962, keys[i][1], 24, 400, "Manrope", "#F4F3F0A8", 220)
     end for
     return g
 end function
@@ -130,11 +130,11 @@ function buildMenu(state as object) as object
     g = CreateObject("roSGNode", "Group")
     uiRect(g, 0, 0, 1920, 1080, "#000000", 0.45)
     px = 1184
-    uiRect(g, px, 0, 736, 1080, "#0B1120", 0.97)
-    uiRect(g, px, 0, 2, 1080, "#1F2A44")
+    uiRect(g, px, 0, 736, 1080, "#0A0A0F", 0.97)
+    uiRect(g, px, 0, 2, 1080, "#F4F3F066")
     titles = {main: "Daybreak", screens: "Go to screen", settings: "Settings"}
-    uiLabel(g, px + 64, 72, "Menu", 24, "#F4A259")
-    uiText(g, px + 64, 108, titles[state.page], 56, 500, "Outfit", "#F4F1EA", 600)
+    uiLabel(g, px + 64, 72, "Menu", 24, "#FFD166")
+    uiText(g, px + 64, 108, titles[state.page], 56, 500, "Outfit", "#F4F3F0", 600)
     entries = menuEntries(state)
     rowH = 76
     visible = 10
@@ -144,10 +144,10 @@ function buildMenu(state as object) as object
     for i = first to entries.Count() - 1
         if i < first + visible
             e = entries[i]
-            if i = state.index then uiCard(g, px + 40, y, 656, rowH - 8, "#1A2440", "#F4A259", 18)
-            uiText(g, px + 72, y + 18, e.label, 30, 600, "Manrope", "#F4F1EA", 420)
+            if i = state.index then uiCard(g, px + 40, y, 656, rowH - 8, "#0A0A0F", "#FFD166", 18)
+            uiText(g, px + 72, y + 18, e.label, 30, 600, "Manrope", "#F4F3F0", 420)
             if e.value <> ""
-                vc = "#A9B1C4"
+                vc = "#F4F3F0A8"
                 if e.value = "On" then vc = "#9EC79B"
                 uiText(g, px + 664, y + 20, e.value, 28, 600, "Manrope", vc, 200, "right")
             end if
@@ -156,7 +156,7 @@ function buildMenu(state as object) as object
     end for
     hint = "Up / Down to move, OK to choose, Back to close"
     if state.page <> "main" then hint = "OK to change, Back for the menu"
-    uiText(g, px + 64, 1000, hint, 24, 400, "Manrope", "#A9B1C4", 640)
+    uiText(g, px + 64, 1000, hint, 24, 400, "Manrope", "#F4F3F0A8", 640)
     return g
 end function
 
@@ -168,17 +168,17 @@ end function
 ' speed: {state, mbps, latencyMs, error}}. Missing parts show as "—".
 function buildDiagnostics(info as object) as object
     g = CreateObject("roSGNode", "Group")
-    uiRect(g, 0, 0, 1920, 1080, "#070B14", 0.98)
-    uiLabel(g, 112, 62, "Diagnostics · Daybreak " + strOr(info.version), 24, "#F4A259")
-    uiText(g, 112, 100, "How Daybreak is doing", 76, 500, "Outfit", "#F4F1EA", 1300)
-    uiText(g, 1808, 140, "Right: live graphs · Back to close", 24, 400, "Manrope", "#A9B1C4", 600, "right")
+    uiRect(g, 0, 0, 1920, 1080, "#07070B", 0.98)
+    uiLabel(g, 112, 62, "Diagnostics · Daybreak " + strOr(info.version), 24, "#FFD166")
+    uiText(g, 112, 100, "How Daybreak is doing", 76, 500, "Outfit", "#F4F3F0", 1300)
+    uiText(g, 1808, 140, "Right: live graphs · Back to close", 24, 400, "Manrope", "#F4F3F0A8", 600, "right")
     ' data sources
     top = 246
     uiCard(g, gx(1), top, gw(8), 770)
     uiLabel(g, gx(1) + 40, top + 36, "Data sources")
     cols = [["Source", 0], ["Updated", 280], ["Time", 470], ["Size", 600], ["Status", 730]]
     for each c in cols
-        uiText(g, gx(1) + 40 + c[1], top + 88, c[0], 24, 700, "Manrope", "#A9B1C4")
+        uiText(g, gx(1) + 40 + c[1], top + 88, c[0], 24, 700, "Manrope", "#F4F3F0A8")
     end for
     yy = top + 132
     names = ["weather", "alerts", "air", "lake", "sports", "gamewx", "lc", "news", "calendar", "tropics", "wallpapers"]
@@ -218,11 +218,11 @@ function buildDiagnostics(info as object) as object
             end if
         end if
         uiDot(g, gx(1) + 48, yy + 16, 8, dot)
-        uiText(g, gx(1) + 68, yy, labels[name], 26, 600, "Manrope", "#F4F1EA", 250)
-        uiText(g, gx(1) + 320, yy, updated, 24, 400, "Manrope", "#C9CEDA", 180)
-        uiText(g, gx(1) + 510, yy, ms, 24, 400, "Manrope", "#C9CEDA", 120)
-        uiText(g, gx(1) + 640, yy, size, 24, 400, "Manrope", "#C9CEDA", 120)
-        uiText(g, gx(1) + 770, yy, status, 24, 400, "Manrope", "#C9CEDA", gw(8) - 810)
+        uiText(g, gx(1) + 68, yy, labels[name], 26, 600, "Manrope", "#F4F3F0", 250)
+        uiText(g, gx(1) + 320, yy, updated, 24, 400, "Manrope", "#F4F3F0CC", 180)
+        uiText(g, gx(1) + 510, yy, ms, 24, 400, "Manrope", "#F4F3F0CC", 120)
+        uiText(g, gx(1) + 640, yy, size, 24, 400, "Manrope", "#F4F3F0CC", 120)
+        uiText(g, gx(1) + 770, yy, status, 24, 400, "Manrope", "#F4F3F0CC", gw(8) - 810)
         yy = yy + 46 ' 12 rows fit above the cache line
     end for
     warm = "No saved data yet"
@@ -232,7 +232,7 @@ function buildDiagnostics(info as object) as object
     end if
     if info.health <> invalid and isTrue(info.health.oldCache) then warm = warm + " · saved data from an older version, refetching"
 
-    uiText(g, gx(1) + 40, top + 700, "Warm-start cache: " + warm, 24, 400, "Manrope", "#A9B1C4", gw(8) - 80)
+    uiText(g, gx(1) + 40, top + 700, "Warm-start cache: " + warm, 24, 400, "Manrope", "#F4F3F0A8", gw(8) - 80)
     ' memory, device, network, speed
     rx = gx(9)
     rw = gw(4)
@@ -257,7 +257,7 @@ function buildDiagnostics(info as object) as object
         if sp.state = "done" then t = fmt1(sp.mbps) + " Mbps down · " + sp.latencyMs.ToStr() + " ms"
         if sp.state = "error" then t = "Failed: " + strOr(sp.error)
     end if
-    uiText(g, rx + 36, top + 724, t, 26, 600, "Manrope", "#F4F1EA", rw - 72)
+    uiText(g, rx + 36, top + 724, t, 26, 600, "Manrope", "#F4F3F0", rw - 72)
     return g
 end function
 
@@ -265,8 +265,8 @@ sub diagCard(g as object, x as integer, y as integer, w as integer, h as integer
     uiCard(g, x, y, w, h)
     uiLabel(g, x + 36, y + 30, title)
     for i = 0 to lines.Count() - 1
-        uiText(g, x + 36, y + 76 + i * 42, lines[i][0], 24, 400, "Manrope", "#A9B1C4", 236)
-        uiText(g, x + w - 36, y + 76 + i * 42, lines[i][1], 24, 600, "Manrope", "#F4F1EA", w - 296, "right")
+        uiText(g, x + 36, y + 76 + i * 42, lines[i][0], 24, 400, "Manrope", "#F4F3F0A8", 236)
+        uiText(g, x + w - 36, y + 76 + i * 42, lines[i][1], 24, 600, "Manrope", "#F4F3F0", w - 296, "right")
     end for
 end sub
 
@@ -277,10 +277,10 @@ end sub
 ' lag, traffic}, bandwidthKbps, speed}.
 function buildLiveGraphs(info as object) as object
     g = CreateObject("roSGNode", "Group")
-    uiRect(g, 0, 0, 1920, 1080, "#070B14", 0.98)
-    uiLabel(g, 112, 62, "Diagnostics · Live", 24, "#F4A259")
-    uiText(g, 112, 100, "The last 6 minutes", 76, 500, "Outfit", "#F4F1EA", 1300)
-    uiText(g, 1808, 140, "Left: status · Back to close", 24, 400, "Manrope", "#A9B1C4", 600, "right")
+    uiRect(g, 0, 0, 1920, 1080, "#07070B", 0.98)
+    uiLabel(g, 112, 62, "Diagnostics · Live", 24, "#FFD166")
+    uiText(g, 112, 100, "The last 6 minutes", 76, 500, "Outfit", "#F4F3F0", 1300)
+    uiText(g, 1808, 140, "Left: status · Back to close", 24, 400, "Manrope", "#F4F3F0A8", 600, "right")
     sm = info.samples
     if sm = invalid then sm = {}
     mem = numList(sm.mem)
@@ -303,7 +303,7 @@ function buildLiveGraphs(info as object) as object
     top = 246
     w = gw(6)
     graphCard(g, gx(1), top, w, "App memory free", lastText(memMb, " MB"), "Memory the TV lets Daybreak use", memMb, 0, "#9EC79B")
-    graphCard(g, gx(7), top, w, "App memory limit used", lastText(limit, "%"), "Over 80% turns on low-memory mode", limit, 100, "#F4A259")
+    graphCard(g, gx(7), top, w, "App memory limit used", lastText(limit, "%"), "Over 80% turns on low-memory mode", limit, 100, "#FFD166")
     minute = 0.0 ' the last 6 samples
     for i = kb.Count() - 6 to kb.Count() - 1
         if i >= 0 then minute = minute + kb[i]
@@ -311,7 +311,7 @@ function buildLiveGraphs(info as object) as object
     perMin = "—"
     if kb.Count() > 0 then perMin = lastText([minute], " KB/min")
     graphCard(g, gx(1), top + 400, w, "Daybreak network traffic", perMin, bw, kb, 0, "#7FB7E8")
-    graphCard(g, gx(7), top + 400, w, "Timer delay", lastText(lag, " ms"), "Rises when the TV is busy. Roku apps can't read CPU use", lag, 0, "#B3A6F2")
+    graphCard(g, gx(7), top + 400, w, "Timer delay", lastText(lag, " ms"), "Rises when the TV is busy. Roku apps can't read CPU use", lag, 0, "#F4F3F0A8")
     return g
 end function
 
@@ -320,13 +320,13 @@ end function
 sub graphCard(g as object, x as integer, y as integer, w as integer, title as string, value as string, caption as string, values as object, scaleMax as float, color as string)
     uiCard(g, x, y, w, 370)
     uiLabel(g, x + 36, y + 30, title)
-    uiText(g, x + w - 36, y + 18, value, 44, 600, "Outfit", "#F4F1EA", 300, "right")
-    uiText(g, x + 36, y + 304, caption, 24, 400, "Manrope", "#A9B1C4", w - 72)
+    uiText(g, x + w - 36, y + 18, value, 44, 600, "Outfit", "#F4F3F0", 300, "right")
+    uiText(g, x + 36, y + 304, caption, 24, 400, "Manrope", "#F4F3F0A8", w - 72)
     chartTop = y + 90
     chartH = 190
-    uiRect(g, x + 36, chartTop + chartH, w - 72, 2, "#1F2A44")
+    uiRect(g, x + 36, chartTop + chartH, w - 72, 2, "#F4F3F066")
     if values.Count() = 0
-        uiText(g, x + 36, chartTop + 70, "Collecting: the first sample arrives within 10 seconds", 24, 400, "Manrope", "#A9B1C4", w - 72)
+        uiText(g, x + 36, chartTop + 70, "Collecting: the first sample arrives within 10 seconds", 24, 400, "Manrope", "#F4F3F0A8", w - 72)
         return
     end if
     top = scaleMax
@@ -364,7 +364,7 @@ function sourceColor(s as object, limits as dynamic, name as string, nowUtc as i
     if limits <> invalid then lim = limits[name]
     if s.lastOk = invalid or s.fails >= 3 then return "#E5484D"
     if lim <> invalid and age > lim.maxAge then return "#E5484D"
-    if s.fails > 0 or (lim <> invalid and age > 2 * lim.ttl) then return "#F4A259"
+    if s.fails > 0 or (lim <> invalid and age > 2 * lim.ttl) then return "#FFD166"
     return "#9EC79B"
 end function
 

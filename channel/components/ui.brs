@@ -11,8 +11,8 @@ function uiType() as object
 end function
 
 function uiColors() as object
-    return {ink: "#0B1120", inkDeep: "#070B14", night: "#090C18", card: "#131B2E", cardHi: "#1A2440", line: "#1F2A44",
-            text: "#F4F1EA", text2: "#A9B1C4", text3: "#C9CEDA", amber: "#F4A259", violet: "#B3A6F2", blue: "#7FB7E8",
+    return {ink: "#0A0A0F", inkDeep: "#07070B", night: "#0A0A12", card: "#F4F3F0", cardHi: "#F4F3F0", line: "#F4F3F0",
+            text: "#F4F3F0", text2: "#F4F3F0A8", text3: "#F4F3F066", amber: "#FFD166", violet: "#F4F3F0A8", blue: "#7FB7E8",
             green: "#9EC79B", rose: "#F2A7B0"}
 end function
 
@@ -26,6 +26,8 @@ function gw(n as integer) as integer
 end function
 
 function hexc(h as string, alpha = "FF" as string) as string
+    ' "#RRGGBBAA" carries its own alpha; "#RRGGBB" takes the argument.
+    if Len(h) = 9 then return "0x" + Mid(h, 2)
     return "0x" + Mid(h, 2) + alpha
 end function
 
@@ -49,7 +51,7 @@ end function
 
 ' Text at (x, y) = top-left. align "left" | "right" | "center": for right and
 ' center, x is the right edge / center and width is required.
-function uiText(p as object, x as float, y as float, text as dynamic, size as integer, weight = 400 as integer, fam = "Manrope" as string, color = "#F4F1EA" as string, width = 0 as integer, align = "left" as string, lines = 1 as integer) as object
+function uiText(p as object, x as float, y as float, text as dynamic, size as integer, weight = 400 as integer, fam = "Manrope" as string, color = "#F4F3F0" as string, width = 0 as integer, align = "left" as string, lines = 1 as integer) as object
     l = p.createChild("Label")
     l.font = uiFont(fam, weight, size)
     l.color = hexc(color)
@@ -69,7 +71,7 @@ function uiText(p as object, x as float, y as float, text as dynamic, size as in
     return l
 end function
 
-function uiLabel(p as object, x as float, y as float, text as string, size = 24 as integer, color = "#A9B1C4" as string) as object
+function uiLabel(p as object, x as float, y as float, text as string, size = 24 as integer, color = "#F4F3F0A8" as string) as object
     return uiText(p, x, y, UCase(text), size, 700, "Manrope", color)
 end function
 
@@ -117,26 +119,37 @@ function uiHeight(l as object, size as integer) as float
     return h
 end function
 
-function uiCard(p as object, x as float, y as float, w as float, h as float, fill = "#131B2E" as string, border = "#1F2A44" as string, r = 28 as integer, opacity = 1.0 as float) as object
+function uiCard(p as object, x as float, y as float, w as float, h as float, fill = "#0A0A0F" as string, border = "#F4F3F066" as string, r = 28 as integer, opacity = 1.0 as float) as object
     radii = [10, 14, 18, 22, 28, 32]
     rr = radii[0]
     for each v in radii
         if Abs(v - r) < Abs(rr - r) then rr = v
     end for
+    ' Axiom Glass: every card is the text colour at 6-11 percent over the photo, with a
+    ' hairline at 14 percent. The fill argument still separates a raised plate from a
+    ' resting one, but the plate itself is always glass - see DESIGN.md.
+    glass = uiColors()
+    raised = false
+    if fill = "#0A0A0F" or fill = "#F4F3F066" then raised = true
     c = p.createChild("Poster")
     c.uri = "pkg:/images/card" + rr.ToStr() + ".9.png"
     c.translation = [x, y]
     c.width = w
     c.height = h
-    c.blendColor = hexc(fill)
-    c.opacity = opacity
+    c.blendColor = hexc(glass.text)
+    if raised then
+        c.opacity = 0.11 * opacity
+    else
+        c.opacity = 0.065 * opacity
+    end if
     if border <> ""
         b = p.createChild("Poster")
         b.uri = "pkg:/images/ring" + rr.ToStr() + ".9.png"
         b.translation = [x, y]
         b.width = w
         b.height = h
-        b.blendColor = hexc(border)
+        b.blendColor = hexc(glass.text)
+        b.opacity = 0.14 * opacity
     end if
     return c
 end function
@@ -194,11 +207,11 @@ function teamChip(p as object, x as float, y as float, size as float, short as s
     if accent <> invalid then border = accent
     uiCard(p, x, y, size, size, color, border, 14)
     fs = Int(size * 0.375)
-    return uiText(p, x + size / 2, y + size / 2 - fs * 0.62, short, fs, 600, "Outfit", "#F4F1EA", Int(size), "center")
+    return uiText(p, x + size / 2, y + size / 2 - fs * 0.62, short, fs, 600, "Outfit", "#F4F3F0", Int(size), "center")
 end function
 
 ' Section label with an optional amber "as of" note on the right of the same line.
-sub cardLabel(g as object, x as integer, y as integer, w as integer, text as string, color = "#A9B1C4" as string, note = "" as string)
+sub cardLabel(g as object, x as integer, y as integer, w as integer, text as string, color = "#F4F3F0A8" as string, note = "" as string)
     uiLabel(g, x, y, text, 24, color)
-    if note <> "" then uiText(g, x + w, y, note, 24, 600, "Manrope", "#F4A259", 300, "right")
+    if note <> "" then uiText(g, x + w, y, note, 24, 600, "Manrope", "#FFD166", 300, "right")
 end sub

@@ -7,6 +7,8 @@ function derive(cfg as object) as object
     today = tDay(now)
     d = {version: tNowUtc(), now: now, today: today, household: cfg.household, city: cfg.city, members: cfg.members, apps: cfg.apps}
     d.place = currentPlace()
+    d.wallMode = "static"
+    if cfg.wallpaper <> invalid then d.wallMode = cfg.wallpaper
     d.home = {lat: cfg.lat, lon: cfg.lon}
     d.weather = fresh("weather")
     d.alerts = fresh("alerts")
@@ -249,7 +251,7 @@ function colorFor(who as object, cfg as object) as string
         end for
     end if
     if who.Count() > 1 then return "#D9A6E0"
-    return "#F4F1EA"
+    return "#F4F3F0"
 end function
 
 function birthdays(members as object, today as integer, within as integer) as object

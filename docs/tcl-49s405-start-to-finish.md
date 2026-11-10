@@ -448,6 +448,36 @@ Launcher layout needs neither: edit `layout.json`, then press Home (or cog -> Re
 `sync_daybreak.py` copies Daybreak's screens, data task, fonts and icons in, keeps `lhdHelper()` and
 `DaybreakConfig()` in one `config.brs`, keeps the helper URL, and refuses to install if the compile fails.
 
+### The look: DESIGN.md
+
+The screensaver now wears the launcher's clothes. `DESIGN.md` in the repo root is the authority - warm
+off-white `#F4F3F0` on an alpha ramp, one amber accent `#FFD166`, cards as glass at 6-11 percent with a
+1 px hairline at 14 percent, radius 30, no shadows and no blur. It lints clean:
+
+```bash
+npx -y -p @google/design.md designmd lint DESIGN.md     # 0 errors
+```
+
+The restyle lives in `channel/components/ui.brs`: `uiCard()` is the plate, `uiColors()` the palette
+(note the 8-digit colours), `uiType()` the scale. A screen that hard-codes a colour is a bug against
+the spec, not a style choice.
+
+### Wallpaper modes - four ways for the picture to move
+
+Set `wallpaper` in `config/family.json` (top level), then `python tools/sync_daybreak.py --install`.
+
+| Mode | What moves |
+|---|---|
+| `static` | Nothing. The photo Daybreak ships with. |
+| `kenburns` | A 42 s zoom that returns to its start, so a 30 s screen never ends mid-move. **Live now.** |
+| `grade` | A wash over the photo: amber in sun and at sunset, blue in rain, violet at night and in a storm. |
+| `slideshow` | A second photo crossfades in after 8 s and stays for the rest of the screen. |
+| `skies` | No photo: a generated sky picked by weather code and hour - clear, partly, cloud, rain, storm, dusk, night. |
+
+The preview renders all five side by side (`wall_static`, `wall_kenburns`, `wall_grade`, `wall_slideshow`,
+`wall_skies`). It poses the frame each animation passes through, because the off-device renderer has no
+Animation node; the TV runs the real interpolator.
+
 ### Preview before you push
 
 ```bash

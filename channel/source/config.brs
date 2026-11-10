@@ -16,6 +16,7 @@ function DaybreakConfig() as object
         chores: ParseJson("[]"),
         gentleNews: true,
         apps: ["Netflix", "YouTube", "Plex", "Prime Video", "Hulu", "Disney+"],
+        wallpaper: "kenburns",
         calendarUrl: "",
         members: []
     }

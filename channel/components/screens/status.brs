@@ -7,7 +7,7 @@
 sub buildAlert(g as object, d as object)
     a = d.takeover
     uiRect(g, 0, 0, 1920, 1080, "#5C0A18")
-    uiRect(g, 0, 0, 1920, 12, "#F4A259")
+    uiRect(g, 0, 0, 1920, 12, "#FFD166")
     uiLabel(g, 112, 72, "National Weather Service · " + d.place.area, 26, "#F4C9A8")
     uiText(g, 112, 116, a.event, 104, 600, "Outfit", "#FFFFFF", 1696)
     until = ""
@@ -30,14 +30,14 @@ end sub
 function buildLoading(now as integer, message as string) as object
     m.clockNodes = invalid
     g = CreateObject("roSGNode", "Group")
-    uiRect(g, 0, 0, 1920, 1080, "#0B1120")
-    uiLabel(g, 112, 62, UCase(tLongDate(now)), 24, "#F4A259")
-    uiText(g, 112, 100, "Daybreak", 76, 500, "Outfit", "#F4F1EA", 1200)
+    uiRect(g, 0, 0, 1920, 1080, "#0A0A0F")
+    uiLabel(g, 112, 62, UCase(tLongDate(now)), 24, "#FFD166")
+    uiText(g, 112, 100, "Daybreak", 76, 500, "Outfit", "#F4F3F0", 1200)
     addClock(g, 1808, 82, 104, 300, "right")
     for c = 0 to 2
         x = gx(1 + c * 4)
         uiCard(g, x, 246, gw(4), 540)
-        uiCard(g, x + 40, 290, 160, 24, "#1F2A44", "", 10)
+        uiCard(g, x + 40, 290, 160, 24, "#F4F3F066", "", 10)
         for r = 0 to 3
             uiCard(g, x + 40, 360 + r * 100, gw(4) - 80 - r * 40, 28, "#18223A", "", 10)
             uiCard(g, x + 40, 400 + r * 100, 180, 22, "#18223A", "", 10)
@@ -45,7 +45,7 @@ function buildLoading(now as integer, message as string) as object
     end for
     uiCard(g, gx(1), 818, gw(8), 200)
     uiCard(g, gx(9), 818, gw(4), 200)
-    uiText(g, gx(1) + gw(8) / 2, 896, message, 30, 500, "Manrope", "#C9CEDA", gw(8) - 80, "center")
+    uiText(g, gx(1) + gw(8) / 2, 896, message, 30, 500, "Manrope", "#F4F3F0CC", gw(8) - 80, "center")
     return g
 end function
 

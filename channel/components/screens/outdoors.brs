@@ -21,7 +21,7 @@ sub buildLake(g as object, d as object)
     uiCard(g, gx0, ly, 64, gy0 + gh - ly, "#7FB7E8", "", 32)
     for each pool in [[pl.summerPool, "Summer full pool"], [pl.winterPool, "Winter pool"]]
         py = gy0 + (gTop - pool[0]) / 20 * gh
-        uiRect(g, gx0 - 16, py - 1, 96, 3, "#F4F1EA")
+        uiRect(g, gx0 - 16, py - 1, 96, 3, "#F4F3F0")
         uiText(g, gx0 + 120, py - 38, pool[0].ToStr() + " ft", 26, 700)
         uiText(g, gx0 + 120, py - 6, pool[1], 24, 400, "Manrope", "#9FB3C8")
     end for
@@ -31,7 +31,7 @@ sub buildLake(g as object, d as object)
     rw = gw(8)
     if lvl < pl.winterPool
         uiCard(g, rx, top, rw, 170, "#2A2418", "#5A4520")
-        uiText(g, rx + 44, top + 30, fmt1(pl.summerPool - lvl) + " ft below summer pool, " + fmt1(pl.winterPool - lvl) + " ft below winter pool", 38, 500, "Outfit", "#F4F1EA", rw - 88)
+        uiText(g, rx + 44, top + 30, fmt1(pl.summerPool - lvl) + " ft below summer pool, " + fmt1(pl.winterPool - lvl) + " ft below winter pool", 38, 500, "Outfit", "#F4F3F0", rw - 88)
         uiText(g, rx + 44, top + 98, "Low water. Check Corps ramp and beach status before you launch.", 26, 400, "Manrope", "#E1D3BE", rw - 88)
     else
         uiCard(g, rx, top, rw, 170, "#0E2033", "#1B3550")
@@ -62,7 +62,7 @@ sub buildLake(g as object, d as object)
         cx = rx + i * (cw + 32)
         uiCard(g, cx, top + 202, cw, 568, "#0E2033", "#1B3550")
         uiLabel(g, cx + 36, top + 238, cards[i][0], 24, "#9FB3C8")
-        uiText(g, cx + 36, top + 290, cards[i][1], 60, 500, "Outfit", "#F4F1EA", Int(cw) - 72)
+        uiText(g, cx + 36, top + 290, cards[i][1], 60, 500, "Outfit", "#F4F3F0", Int(cw) - 72)
         uiText(g, cx + 36, top + 400, cards[i][2], 26, 400, "Manrope", "#C9D6E3", Int(cw) - 72, "left", 4)
     end for
 end sub
@@ -85,13 +85,13 @@ sub buildSky(g as object, d as object)
     title = "Cloudy tonight."
     if cloud < 70 then title = "Some clouds tonight."
     if cloud < 30 then title = "Clear skies. Look up."
-    header(g, "TONIGHT'S SKY OVER " + UCase(d.place.town), title, "#B3A6F2", false)
+    header(g, "TONIGHT'S SKY OVER " + UCase(d.place.town), title, "#F4F3F0A8", false)
     mp = d.moon
     idx = Int(mp.age / 29.530588853 * 30)
     if idx > 29 then idx = 29
     uiImage(g, "pkg:/images/moon_" + tPad(idx, 2) + ".png", 112, 330, 300, 300)
     uiText(g, 452, 370, Int(mp.illum * 100 + 0.5).ToStr() + "%", 72, 300, "Outfit")
-    uiText(g, 452, 462, mp.name, 28, 600, "Manrope", "#F4F1EA", 240, "left", 2)
+    uiText(g, 452, 462, mp.name, 28, 600, "Manrope", "#F4F3F0", 240, "left", 2)
     uiText(g, 452, 540, "Full moon " + tShortDate(tUtcToWallApprox(mp.nextFull)), 24, 400, "Manrope", "#B8BED0", 240)
     uiCard(g, gx(5) + 16, 300, 1808 - gx(5) - 16, 380, "#131729", "#2A3050", 32)
     s = d.shower
@@ -100,16 +100,16 @@ sub buildSky(g as object, d as object)
     if s <> invalid
         lbl = "Coming up"
         if (s.peak - d.today) \ 86400 <= 7 then lbl = "This week's show"
-        uiLabel(g, tx, 340, lbl, 24, "#B3A6F2")
-        uiText(g, tx, 384, s.name + " meteor shower peaks " + tDayWord(s.peak, d.today) + " night", 54, 500, "Outfit", "#F4F1EA", tw, "left", 2)
+        uiLabel(g, tx, 340, lbl, 24, "#F4F3F0A8")
+        uiText(g, tx, 384, s.name + " meteor shower peaks " + tDayWord(s.peak, d.today) + " night", 54, 500, "Outfit", "#F4F3F0", tw, "left", 2)
         tip = "Best in the dark hours before dawn. Face away from town lights."
         if d.place.lake <> invalid then tip = tip + " The " + d.place.lake.name + " shoreline is darker than downtown."
-        uiText(g, tx, 540, tip, 26, 400, "Manrope", "#C9CEDA", tw, "left", 3)
+        uiText(g, tx, 540, tip, 26, 400, "Manrope", "#F4F3F0CC", tw, "left", 3)
     else
-        uiLabel(g, tx, 340, "Tonight", 24, "#B3A6F2")
+        uiLabel(g, tx, 340, "Tonight", 24, "#F4F3F0A8")
         m2 = moonWords(mp.name)
-        uiText(g, tx, 384, m2.line, 54, 500, "Outfit", "#F4F1EA", tw, "left", 2)
-        uiText(g, tx, 540, m2.tip, 26, 400, "Manrope", "#C9CEDA", tw, "left", 3)
+        uiText(g, tx, 384, m2.line, 54, 500, "Outfit", "#F4F3F0", tw, "left", 2)
+        uiText(g, tx, 540, m2.tip, 26, 400, "Manrope", "#F4F3F0CC", tw, "left", 3)
     end if
     lo = 99
     for each hr in d.weather.hours
@@ -129,8 +129,8 @@ sub buildSky(g as object, d as object)
         w3 = gw(4)
         uiCard(g, x, 760, w3, 256, "#131729", "#2A3050")
         uiLabel(g, x + 36, 794, cards[i][0], 24, "#A3A9C2")
-        uiText(g, x + 36, 836, cards[i][1], 40, 500, "Outfit", "#F4F1EA", w3 - 72)
-        uiText(g, x + 36, 910, cards[i][2], 24, 400, "Manrope", "#C9CEDA", w3 - 72, "left", 2)
+        uiText(g, x + 36, 836, cards[i][1], 40, 500, "Outfit", "#F4F3F0", w3 - 72)
+        uiText(g, x + 36, 910, cards[i][2], 24, 400, "Manrope", "#F4F3F0CC", w3 - 72, "left", 2)
     end for
 end sub
 
@@ -152,8 +152,8 @@ function seasonItems(month as integer) as dynamic
 end function
 
 sub buildSeason(g as object, d as object)
-    uiWallpaper(g, d, "season", "#0B1120", "pkg:/images/bg_season.jpg")
-    header(g, "WHAT'S IN SEASON · " + UCase(tMonthNames()[tParts(d.now).m - 1]), "The season in " + d.place.seasonRegion, "#F4A259", false)
+    uiWallpaper(g, d, "season", "#0A0A0F", "pkg:/images/bg_season.jpg")
+    header(g, "WHAT'S IN SEASON · " + UCase(tMonthNames()[tParts(d.now).m - 1]), "The season in " + d.place.seasonRegion, "#FFD166", false)
     cards = []
     cards.Append(seasonItems(tParts(d.now).m))
     frost = invalid
@@ -170,9 +170,9 @@ sub buildSeason(g as object, d as object)
     for i = 0 to 3
         x = gx(1 + i * 3)
         cw = gw(3)
-        uiCard(g, x, 540, cw, 476, "#0B1120", "#2A3656", 28, 0.9)
-        uiLabel(g, x + 36, 576, cards[i][0], 24, "#F4A259")
-        uiText(g, x + 36, 620, cards[i][1], 40, 500, "Outfit", "#F4F1EA", cw - 72, "left", 2)
-        uiText(g, x + 36, 740, cards[i][2], 26, 400, "Manrope", "#E1E4EC", cw - 72, "left", 7)
+        uiCard(g, x, 540, cw, 476, "#0A0A0F", "#2A3656", 28, 0.9)
+        uiLabel(g, x + 36, 576, cards[i][0], 24, "#FFD166")
+        uiText(g, x + 36, 620, cards[i][1], 40, 500, "Outfit", "#F4F3F0", cw - 72, "left", 2)
+        uiText(g, x + 36, 740, cards[i][2], 26, 400, "Manrope", "#F4F3F0CC", cw - 72, "left", 7)
     end for
 end sub

@@ -23,18 +23,18 @@ function greeting(d as object) as string
     return "Good " + part + ", " + d.household
 end function
 
-sub header(g as object, eyebrow as string, title as string, accent = "#F4A259" as string, withClock = true as boolean)
+sub header(g as object, eyebrow as string, title as string, accent = "#FFD166" as string, withClock = true as boolean)
     uiLabel(g, 112, 62, eyebrow, 24, accent)
     w = 1696
     if withClock then w = 1200
-    uiText(g, 112, 100, title, 76, 500, "Outfit", "#F4F1EA", w)
+    uiText(g, 112, 100, title, 76, 500, "Outfit", "#F4F3F0", w)
     if withClock then addClock(g, 1808, 82, 104, 300, "right")
 end sub
 
-sub addClock(g as object, x as integer, y as integer, size as integer, weight as integer, align as string, color = "#F4F1EA" as string)
+sub addClock(g as object, x as integer, y as integer, size as integer, weight as integer, align as string, color = "#F4F3F0" as string)
     clock = uiText(g, x, y, "", size, weight, "Outfit", color)
-    ampm = uiText(g, x, y, "", Int(size * 0.33), 300, "Outfit", "#C9CEDA")
-    if color <> "#F4F1EA" then ampm.color = hexc(color)
+    ampm = uiText(g, x, y, "", Int(size * 0.33), 300, "Outfit", "#F4F3F0CC")
+    if color <> "#F4F3F0" then ampm.color = hexc(color)
     m.clockNodes = {clock: clock, ampm: ampm, x: x, y: y, size: size, align: align}
 end sub
 
@@ -61,19 +61,31 @@ sub updateClock()
     end if
 end sub
 
+'
 ' Full-screen photo, or a plain fill when memory is low (a decoded 1080p photo is 8 MB).
-' Photo backdrop: today's wallpaper for this screen (d.wallpapers, downloaded
-' by DataTask) under a fill in the screen's color at wallpaperDim(), else the
-' packaged pre-dimmed photo, else the plain fill. Low-memory mode uses the fill.
+' Four ways for the wallpaper itself to move, chosen by config/family.json "wallpaper":
+'   static    - the photo, still. What Daybreak shipped.
+'   kenburns  - the photo drifts in and out of a slow zoom for the whole 42 s.
+'   grade     - a tinted layer over the photo, colour and strength from weather and hour.
+'   slideshow - a second photo crossfades in after 8 s.
+'   skies     - no photo: a generated sky picked by weather code and hour.
 ' Sets m.wallpaperCredit to the photo, which buildScreen credits in the corner.
 sub uiWallpaper(g as object, d as object, id as string, fill as string, packaged = "" as string)
     w = invalid
     if d.wallpapers <> invalid then w = d.wallpapers[id]
+    mode = wallMode(d)
+    m.wallpaperCredit = invalid  ' a sky or a plain fill has no photo to credit
     if m.lowMemory = true
         uiRect(g, 0, 0, 1920, 1080, fill)
+    else if mode = "skies"
+        uiImage(g, "pkg:/images/sky_" + skyKind(d) + ".png", 0, 0, 1920, 1080)
+        uiRect(g, 0, 0, 1920, 1080, fill, wallpaperDim(id) * 0.62)
     else if w <> invalid
-        uiImage(g, w.uri, 0, 0, 1920, 1080)
+        p = uiImage(g, w.uri, 0, 0, 1920, 1080)
+        if mode = "kenburns" then kenBurns(p)
+        if mode = "slideshow" then slideshow(g, d, id)
         uiRect(g, 0, 0, 1920, 1080, fill, wallpaperDim(id))
+        if mode = "grade" then weatherGrade(g, d)
         m.wallpaperCredit = w
     else if packaged <> ""
         uiImage(g, packaged, 0, 0, 1920, 1080)
@@ -81,6 +93,109 @@ sub uiWallpaper(g as object, d as object, id as string, fill as string, packaged
         uiRect(g, 0, 0, 1920, 1080, fill)
     end if
 end sub
+
+function wallMode(d as object) as string
+    if d <> invalid and d.wallMode <> invalid then return d.wallMode
+    return "static"
+end function
+
+' Local hour, honouring the preview harness's fixed clock.
+function wallHour() as integer
+    dt = CreateObject("roDateTime")
+    if m.testNowWall <> invalid
+        dt.FromSeconds(m.testNowWall)
+        return dt.GetHours()
+    end if
+    dt.ToLocalTime()
+    return dt.GetHours()
+end function
+
+' Slow zoom that returns to where it started, so a 30 s screen never ends mid-move.
+sub kenBurns(p as object)
+    p.scaleRotateCenter = [960.0, 540.0]
+    p.scale = [1.0, 1.0]
+    if m.testNowWall <> invalid
+        ' preview: mid-zoom, the frame the animation would pass through
+        p.scale = [1.03, 1.03]
+        return
+    end if
+    an = p.createChild("Animation")
+    an.duration = 42
+    an.repeat = true
+    fi = an.createChild("Vector2DFieldInterpolator")
+    fi.field = "scale"
+    fi.key = [0.0, 0.5, 1.0]
+    fi.keyValue = [[1.0, 1.0], [1.065, 1.065], [1.0, 1.0]]
+    fi.repeat = true
+end sub
+
+' A second photo, crossfaded in after 8 s and left there for the rest of the screen.
+sub slideshow(g as object, d as object, id as string)
+    other = invalid
+    if d.wallpapers = invalid then return
+    for each k in d.wallpapers
+        if k <> id and d.wallpapers[k] <> invalid then other = d.wallpapers[k]
+        if other <> invalid then exit for
+    end for
+    if other = invalid then return
+    p = uiImage(g, other.uri, 0, 0, 1920, 1080)
+    p.opacity = 0.0
+    if m.testNowWall <> invalid
+        ' preview: the halfway point of the crossfade
+        p.opacity = 0.55
+        return
+    end if
+    an = p.createChild("Animation")
+    an.duration = 2.4
+    an.delay = 8.0
+    op = an.createChild("FloatFieldInterpolator")
+    op.field = "opacity"
+    op.key = [0.0, 1.0]
+    op.keyValue = [0.0, 1.0]
+end sub
+
+' Weather grade: a warm wash in sun, cool in rain, violet at night or in a storm.
+sub weatherGrade(g as object, d as object)
+    c = uiColors()
+    hour = wallHour()
+    code = 0
+    if d.weather <> invalid then code = d.weather.code
+    kind = wxKind(code)
+    col = c.blue
+    op = 0.16
+    if kind = "sun" then
+        col = c.amber
+        op = 0.16
+    else if kind = "storm"
+        col = c.violet
+        op = 0.24
+    else if kind = "snow" or kind = "cloud"
+        col = c.text
+        op = 0.10
+    end if
+    if hour >= 20 or hour < 6 then
+        col = c.violet
+        op = 0.22
+    else if hour >= 17 then
+        col = c.amber
+        op = 0.14
+    end if
+    uiRect(g, 0, 0, 1920, 1080, col, op)
+end sub
+
+' Which generated sky fits right now: hour first, then the weather code.
+function skyKind(d as object) as string
+    hour = wallHour()
+    if hour < 6 or hour >= 20 then return "night"
+    if hour >= 17 then return "dusk"
+    code = 0
+    if d.weather <> invalid then code = d.weather.code
+    kind = wxKind(code)
+    if kind = "sun" then return "clear"
+    if kind = "snow" then return "cloud"
+    if kind = "moon" then return "night"
+    return kind
+end function
 
 ' How much of the screen's fill covers a wallpaper: the photo screens show
 ' more of it, card screens keep it a quiet texture behind the cards.
@@ -134,7 +249,7 @@ sub teamBadge(g as object, x as float, y as float, size as integer, gm as object
         teamChip(g, x, y, size, gm.short, gm.color, gm.accent)
         return
     end if
-    uiCard(g, x, y, size, size, "#0B1120", gm.color, 14)
+    uiCard(g, x, y, size, size, "#0A0A0F", gm.color, 14)
     teamLogo(g, gm.logo, x + 6, y + 6, size - 12, 1.0)
 end sub
 
@@ -178,7 +293,7 @@ sub sunArc(g as object, x as float, y as float, w as float, h as float, uri as s
     if frac > 0 and frac < 1
         px = x + w * frac
         py = y + h - 4 - (h - 8) * 4 * frac * (1 - frac)
-        uiDot(g, px, py, dotR * 2.1, "#F4A259", 0.16)
-        uiDot(g, px, py, dotR, "#F4A259")
+        uiDot(g, px, py, dotR * 2.1, "#FFD166", 0.16)
+        uiDot(g, px, py, dotR, "#FFD166")
     end if
 end sub
