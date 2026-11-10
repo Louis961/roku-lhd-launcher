@@ -63,8 +63,18 @@ def weather(place):
     """Current conditions for one place, or a reason it could not be fetched."""
     q = "latitude=%s&longitude=%s&current=temperature_2m,weather_code,is_day,cloud_cover,wind_speed_10m" \
         "&temperature_unit=celsius&timezone=auto" % (place["lat"], place["lon"])
+    d = None
+    for attempt in range(3):
+        try:
+            d = _get("https://api.open-meteo.com/v1/forecast?" + q)["current"]
+            break
+        except Exception as exc:
+            last = exc
+            time.sleep(1.2 * (attempt + 1))
+    if d is None:
+        return {"ok": False, "error": str(last)[:120], "cond": "No data",
+                "key": "cloud", "day": False, "temp": None, "cloud": 0, "wind": 0}
     try:
-        d = _get("https://api.open-meteo.com/v1/forecast?" + q)["current"]
         cond, key = CODES.get(int(d.get("weather_code", 3)), ("Cloudy", "cloud"))
         return {
             "temp": round(float(d.get("temperature_2m", 0))),
@@ -75,58 +85,72 @@ def weather(place):
             "ok": True,
         }
     except Exception as exc:
-        return {"ok": False, "error": str(exc)[:120], "cond": "Unavailable",
+        return {"ok": False, "error": str(exc)[:120], "cond": "No data",
                 "key": "cloud", "day": False, "temp": None, "cloud": 0, "wind": 0}
 
 
 def sky_html(place, wx):
-    """One sky, as a page. Sun or moon, drifting clouds, a horizon and a caption."""
+    """One sky, as a page: sun or moon, drifting cloud bands, a city skyline, a caption.
+
+    The skyline is seeded from the place name, so each city has its own silhouette and it
+    never changes between renders.
+    """
     top, bottom, accent = SKY[wx["key"]][0 if wx["day"] else 1]
-    disc = "sun" if wx["day"] else "moon"
-    disc_y = 22 if wx["day"] else 18
     clouds = max(0, min(100, wx["cloud"]))
     cloud_alpha = 0.10 + clouds / 100.0 * 0.55
+    seed = sum(ord(c) for c in place["name"])
     stars = "" if wx["day"] else "".join(
         '<i style="left:%d%%;top:%d%%;opacity:%.2f"></i>'
-        % (7 + (i * 37) % 88, 4 + (i * 53) % 46, 0.25 + ((i * 29) % 60) / 100.0)
+        % (5 + (seed + i * 37) % 90, 3 + (i * 53) % 44, 0.15 + ((i * 29) % 45) / 100.0)
+        for i in range(34))
+    bars = "".join(
+        '<i style="height:%d%%"></i>' % (14 + ((seed * (i + 3) * 7) % 58))
         for i in range(26))
-    temp = "&mdash;" if wx["temp"] is None else "%d&deg;" % wx["temp"]
+    temp = "&mdash;" if wx["temp"] is None else "%d&deg;C" % wx["temp"]
+    disc_size = 150 if wx["day"] else 132
     return """<!doctype html><html><head><meta charset="utf-8"><style>
-@font-face{font-family:Outfit;src:local("Segoe UI"),local("Helvetica Neue"),sans-serif}
 *{margin:0;padding:0;box-sizing:border-box}
 body{width:1920px;height:1080px;overflow:hidden;font-family:"Segoe UI",system-ui,sans-serif;
-  background:linear-gradient(180deg,%(top)s 0%%,%(mid)s 55%%,%(bottom)s 100%%);color:#fff}
-.stars i{position:absolute;width:3px;height:3px;border-radius:50%%;background:#fff}
-.disc{position:absolute;right:280px;top:%(disc_y)d%%;width:190px;height:190px;border-radius:50%%;
-  background:radial-gradient(circle at 40%% 40%%, #fff, %(accent)s 55%%, transparent 72%%);
-  filter:blur(2px);opacity:.92}
-.haze{position:absolute;inset:0;background:radial-gradient(ellipse at 50%% 105%%,
-  rgba(255,255,255,.28), transparent 60%%)}
-.cloud{position:absolute;left:-20%%;width:140%%;height:34%%;border-radius:50%%;
-  background:rgba(255,255,255,%(ca)s);filter:blur(38px)}
-.c1{top:8%%}.c2{top:26%%;height:26%%;opacity:.7}.c3{top:44%%;height:20%%;opacity:.5}
-.hill{position:absolute;left:0;right:0;bottom:0;height:26%%;
-  background:linear-gradient(180deg,rgba(0,0,0,.35),rgba(0,0,0,.72))}
-.meta{position:absolute;left:110px;top:268px;text-shadow:0 2px 24px rgba(0,0,0,.55)}
+  background:linear-gradient(180deg,%(top)s 0%%,%(mid)s 52%%,%(bottom)s 78%%);color:#fff}
+.stars i{position:absolute;width:2px;height:2px;border-radius:50%%;background:#fff}
+.disc{position:absolute;right:250px;top:16%%;width:%(ds)dpx;height:%(ds)dpx;border-radius:50%%;
+  background:radial-gradient(circle at 42%% 42%%, #fff 0%%, %(accent)s 46%%, rgba(255,255,255,0) 68%%);
+  box-shadow:0 0 70px 14px %(accent)s33;opacity:.92}
+.haze{position:absolute;left:0;right:0;bottom:0;height:42%%;
+  background:radial-gradient(ellipse at 50%% 100%%, %(accent)s33, transparent 68%%)}
+.cloud{position:absolute;left:-25%%;width:150%%;height:26%%;border-radius:50%%;
+  background:rgba(255,255,255,%(ca)s);filter:blur(46px)}
+.c1{top:6%%}.c2{top:24%%;height:20%%;opacity:.65}.c3{top:40%%;height:14%%;opacity:.45}
+.skyline{position:absolute;left:0;right:0;bottom:0;height:14%%;display:flex;
+  align-items:flex-end;gap:13px;padding:0 30px;opacity:.42;filter:blur(3px)}
+.skyline i{flex:1;background:linear-gradient(180deg,#0d1119 0%%,#06080c 100%%);
+  border-radius:4px 4px 0 0}
+.win{position:absolute;left:0;right:0;bottom:0;height:14%%;opacity:.18;
+  background-image:radial-gradient(circle, rgba(255,214,150,.55) 1.2px, transparent 1.4px);
+  background-size:34px 46px;background-position:0 6px;mix-blend-mode:screen}
+.ground{position:absolute;left:0;right:0;bottom:0;height:3.2%%;background:#03050a}
+.meta{position:absolute;left:104px;top:250px;text-shadow:0 3px 28px rgba(0,0,0,.6)}
 .city{font-size:104px;font-weight:600;letter-spacing:-2px;line-height:1}
-.country{font-size:34px;opacity:.62;margin-top:10px;letter-spacing:6px;text-transform:uppercase}
-.right{position:absolute;right:110px;top:268px;text-align:right;
-  text-shadow:0 2px 24px rgba(0,0,0,.55)}
-.temp{font-size:150px;font-weight:300;line-height:.9}
-.cond{font-size:38px;opacity:.8;margin-top:8px}
-.wind{font-size:26px;opacity:.5;margin-top:14px}
+.country{font-size:30px;opacity:.6;margin-top:12px;letter-spacing:7px;text-transform:uppercase}
+.right{position:absolute;right:104px;top:246px;text-align:right;
+  text-shadow:0 3px 28px rgba(0,0,0,.6)}
+.temp{font-size:142px;font-weight:300;line-height:.92;letter-spacing:-4px}
+.cond{font-size:34px;opacity:.82;margin-top:10px}
+.wind{font-size:24px;opacity:.45;margin-top:16px;letter-spacing:1px}
 </style></head><body>
 <div class="stars">%(stars)s</div>
 <div class="disc"></div>
-<div class="haze"></div>
 <div class="cloud c1"></div><div class="cloud c2"></div><div class="cloud c3"></div>
-<div class="hill"></div>
+<div class="haze"></div>
+<div class="skyline">%(bars)s</div>
+<div class="win"></div>
+<div class="ground"></div>
 <div class="meta"><div class="city">%(city)s</div><div class="country">%(country)s</div></div>
 <div class="right"><div class="temp">%(temp)s</div><div class="cond">%(cond)s</div>
 <div class="wind">%(wind)s km/h</div></div>
 </body></html>""" % {
-        "top": top, "bottom": bottom, "accent": accent,
-        "mid": bottom, "disc_y": disc_y, "ca": cloud_alpha, "stars": stars,
+        "top": top, "bottom": bottom, "accent": accent, "mid": bottom,
+        "ds": disc_size, "ca": cloud_alpha, "stars": stars, "bars": bars,
         "city": place["name"], "country": place.get("country", ""),
         "temp": temp, "cond": wx["cond"], "wind": wx["wind"],
     }
@@ -182,8 +206,8 @@ def render(html, width=1920, height=1080, timeout=25):
             pass
 
 
-def weather_png(place):
-    return render(sky_html(place, weather(place)))
+def weather_png(place, wx=None):
+    return render(sky_html(place, wx or weather(place)))
 
 
 def find_place(spec):

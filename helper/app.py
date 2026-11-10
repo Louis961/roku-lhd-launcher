@@ -21,6 +21,27 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any
 from xml.etree import ElementTree as ET
 
+
+def _load_dotenv():
+    """Read helper/.env if present, so tokens stay out of argv and shell history."""
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+    if not os.path.exists(path):
+        return
+    try:
+        with open(path, "r", encoding="utf-8", errors="replace") as f:
+            for raw in f:
+                line = raw.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+                key, value = line.split("=", 1)
+                os.environ.setdefault(key.strip(), value.strip())
+    except Exception:
+        pass
+
+
+_load_dotenv()
+
+
 import art
 
 TV_IP = os.environ.get("TV_IP", "192.168.1.50")
@@ -80,9 +101,11 @@ def weather_image(spec, ttl=300):
         hit = _art_cache.get(key)
         if hit and time.time() - hit[0] < ttl:
             return hit[1]
-    body = art.weather_png(place)
-    with _art_lock:
-        _art_cache[key] = (time.time(), body)
+    wx = art.weather(place)
+    body = art.weather_png(place, wx)
+    if wx.get("ok"):
+        with _art_lock:
+            _art_cache[key] = (time.time(), body)
     return body
 
 

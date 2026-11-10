@@ -33,3 +33,20 @@
 - **Open-Meteo** — weather data used by the screensaver.
 - The browser preview uses an Unsplash image as a fallback when Immich is not
   configured; Unsplash images remain subject to the Unsplash license.
+
+## Daybreak (merged 2026-11-09)
+
+`channel/components/DaybreakScene.*`, `channel/components/DataTask.xml`,
+`channel/components/SpeedTask.*`, `channel/components/data/`,
+`channel/components/screens/`, `channel/components/ui.brs`,
+`channel/components/overlays.brs`, `channel/source/lib/`, the fonts and the
+icons come from Daybreak by John B. Roberts (roberjo/tv-check), MIT licence.
+They are unmodified except:
+
+- `components/data/sources.brs`: `newsQueries()` returns an empty list when the
+  config has no news block, instead of raising a dot-operator error and stopping
+  every other feed for the session.
+- `components/data/fetch.brs`: the refresh error prints the backtrace.
+
+In this build Daybreak is the screensaver (`RunScreenSaver` in
+`source/main.brs`); LHD remains the launcher.
