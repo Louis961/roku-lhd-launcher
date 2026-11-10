@@ -6,7 +6,7 @@
 ' --- which screens, in what order ----------------------------------------------
 
 function availableScreens(d as object) as object
-    a = {ambient: true, briefing: true, tonight: true, week: true, sky: true, school: true, radar: true, night: true}
+    a = {ambient: true, briefing: true, tonight: true, week: true, sky: true, school: true, night: true}
     if d.takeover <> invalid then a.alert = true
     wd = tWeekday(d.now)
     if (wd = 5 or wd = 6) and d.weather <> invalid then a.weekend = true
@@ -40,15 +40,14 @@ function chooseScreens(d as object, mode as string, hidden = {} as object) as ob
     for each al in d.alerts
         if al.level = "warning" then warning = true
     end for
-    ' a dangerous-weather warning takes over everything: the alert and radar only
-    if d.takeover <> invalid then return ["alert", "radar"]
+    ' a dangerous-weather warning takes over everything: the alert only
+    if d.takeover <> invalid then return ["alert"]
     ' late at night the screensaver is just a dim clock (plus radar in a warning)
     if mode = "screensaver" and (h >= 23 or h < 5)
-        if warning then return ["radar", "night"]
+        return ["night"]
         return ["night"]
     end if
     order = []
-    if warning then order.Push("radar")
     order.Push("gameday")
     if h >= 4 and h < 11
         order.Push("briefing")
@@ -73,8 +72,7 @@ function chooseScreens(d as object, mode as string, hidden = {} as object) as ob
         if wd = 0 or wd <= 4 then order.Push("school")
         order.Push("sky")
     end if
-    if d.rainSoon or warning then order.Unshift("radar")
-    order.Append(["board", "week", "radar", "lake", "sky", "recap", "season", "ambient", "briefing"])
+    order.Append(["board", "week", "sky", "recap", "season", "ambient", "briefing"])
     seen = {}
     out = []
     for each s in order
@@ -98,7 +96,6 @@ end function
 
 function screenSeconds(id as string) as integer
     if id = "briefing" or id = "week" or id = "tonight" or id = "weekend" then return 30
-    if id = "radar" then return 16
     if id = "alert" then return 30
     if id = "night" then return 60
     return 20
@@ -127,7 +124,6 @@ function buildScreen(id as string, d as object) as object
     if id = "school" then buildSchool(g, d)
     if id = "board" then buildBoard(g, d)
     if id = "season" then buildSeason(g, d)
-    if id = "radar" then buildRadar(g, d)
     if id = "night" then buildNight(g, d)
     if id = "alert" then buildAlert(g, d)
     ' the photo's credit, bottom right (the scene hides it while its status line shows)

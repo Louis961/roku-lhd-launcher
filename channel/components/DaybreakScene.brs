@@ -367,7 +367,7 @@ end sub
 
 sub drawMenu()
     all = []
-    for each id in ["briefing", "ambient", "tonight", "week", "weekend", "recap", "gameday", "radar", "lake", "sky", "school", "board", "season"]
+    for each id in ["briefing", "ambient", "tonight", "week", "weekend", "recap", "gameday", "lake", "sky", "school", "board", "season"]
         all.Push(id)
     end for
     m.menu.settings = m.settings

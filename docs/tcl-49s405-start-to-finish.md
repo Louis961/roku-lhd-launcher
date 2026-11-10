@@ -378,6 +378,11 @@ All free and keyless except the calendar.
 | Wallpaper catalog (`catalog.json` + `img/`) | Photos, credited on screen | `place.wallpapers` |
 | Roku bandwidth log | Diagnostics graph | Nothing |
 
+**Turned off in this build:** radar (NOAA MRMS), ESPN sports, the lake gauge, college athletics and the
+family calendar. Radar's fetch and its place in the playlist are removed; the rest are inert because their
+keys are null or empty, so nothing is downloaded and no card is drawn. Verified on the TV: a screensaver
+rotation showed no game, calendar, radar or lake label at all.
+
 ### What you can customize
 
 Two config files, one layout file, one menu on the TV.
@@ -427,6 +432,7 @@ Two config files, one layout file, one menu on the TV.
 | `apps` `{id:{name,icon}}` | Rename or re-icon a tile: `switch, gamepad, playstation, raspberrypi, speaker, hdmi, av, livetv, stock, generic` |
 | `photo_interval` | Seconds between backgrounds |
 | `wallpaper` | `["solid"]`, `["photos"]` (drop files in `helper/photos`), `["immich"]`, or a list to alternate |
+| `channel/components/ui.brs` | `uiColors()` sets the palette, `uiType()` the type scale - the whole look changes here, then rebuild |
 
 **4. On the TV**: OK -> Settings - gentle news, rotation speed, which screens. Saved on the TV.
 
@@ -441,6 +447,21 @@ python sideload.py --install --launch     # channel code changed only
 Launcher layout needs neither: edit `layout.json`, then press Home (or cog -> Restart launcher).
 `sync_daybreak.py` copies Daybreak's screens, data task, fonts and icons in, keeps `lhdHelper()` and
 `DaybreakConfig()` in one `config.brs`, keeps the helper URL, and refuses to install if the compile fails.
+
+### Preview before you push
+
+```bash
+cd "D:/Projects/roku-lhd"
+python tools/preview.py          # then open http://127.0.0.1:8100
+```
+
+It renders every screen off-device from Daybreak's own code, serves the PNGs on one page, re-renders on the
+button, and re-renders by itself when `config/family.json` is newer than the last run. Stale screens are
+cleared first, so a screen you remove disappears. The same page links the launcher preview and the helper's
+health, so both halves can be checked before an install.
+
+It is a **layout** preview: the off-device renderer cannot reach the network, so it draws with Daybreak's
+sample feeds and your settings. Live weather, headlines and photos only appear on the TV.
 
 ### Getting the best information and the best picture
 
@@ -468,6 +489,9 @@ Launcher layout needs neither: edit `layout.json`, then press Home (or cog -> Re
 - **One dev slot.** Deleting the channel brings Roku's ad-filled home screen back; nothing is installed twice.
 - **The launcher needs the PC** for its app list and background (`/apps`, `/photo`). The screensaver does not:
   it keeps working with the PC off.
+- **News is headlines only.** A headline and its source, cut to fit the card. No tap-through and no
+  article view: a channel draws its own screen and has no browser. The articles themselves are normal
+  web pages with ads. A QR code on the screen to open a story on your phone is the only way around it.
 - **Any key ends the screensaver** - Daybreak's design.
 - **No root, no firmware change.** The ACR and ad plugin layer is untouched; what changed is what is drawn.
 

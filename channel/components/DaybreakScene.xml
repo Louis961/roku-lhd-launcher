@@ -15,8 +15,8 @@
   <script type="text/brightscript" uri="pkg:/components/screens/week.brs" />
   <script type="text/brightscript" uri="pkg:/components/screens/outdoors.brs" />
   <script type="text/brightscript" uri="pkg:/components/screens/sports.brs" />
-  <script type="text/brightscript" uri="pkg:/components/screens/family.brs" />
   <script type="text/brightscript" uri="pkg:/components/screens/radar.brs" />
+  <script type="text/brightscript" uri="pkg:/components/screens/family.brs" />
   <script type="text/brightscript" uri="pkg:/components/overlays.brs" />
   <script type="text/brightscript" uri="pkg:/components/DaybreakScene.brs" />
   <children>

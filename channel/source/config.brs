@@ -12,7 +12,7 @@ function DaybreakConfig() as object
         city: "Long Beach, CA",
         lat: 33.8045, lon: -118.1876,
         curbWeekday: 1,
-        place: ParseJson("{""town"": ""Long Beach"", ""region"": ""CA"", ""area"": ""Los Angeles County"", ""seasonRegion"": ""Southern California"", ""timezone"": ""America/Los_Angeles"", ""lake"": ""none"", ""college"": ""none"", ""curbside"": ""none"", ""news"": {""queries"": [""Long+Beach+CA"", ""Long+Beach+weather""]}, ""teams"": [], ""rivalry"": []}"),
+        place: ParseJson("{""town"": ""Long Beach"", ""region"": ""CA"", ""area"": ""Los Angeles County"", ""seasonRegion"": ""Southern California"", ""timezone"": ""America/Los_Angeles"", ""lake"": ""none"", ""college"": ""none"", ""curbside"": ""none"", ""news"": {""queries"": [""Long+Beach+CA"", ""Long+Beach+news""], ""local"": ""long beach|signal hill|lakewood""}, ""teams"": [], ""rivalry"": []}"),
         chores: ParseJson("[]"),
         gentleNews: true,
         apps: ["Netflix", "YouTube", "Plex", "Prime Video", "Hulu", "Disney+"],

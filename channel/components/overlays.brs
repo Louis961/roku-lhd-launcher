@@ -181,7 +181,7 @@ function buildDiagnostics(info as object) as object
         uiText(g, gx(1) + 40 + c[1], top + 88, c[0], 24, 700, "Manrope", "#A9B1C4")
     end for
     yy = top + 132
-    names = ["weather", "alerts", "air", "lake", "sports", "gamewx", "lc", "news", "calendar", "radar", "tropics", "wallpapers"]
+    names = ["weather", "alerts", "air", "lake", "sports", "gamewx", "lc", "news", "calendar", "tropics", "wallpapers"]
     labels = {weather: "Weather", alerts: "NWS alerts", air: "Air quality", lake: "Lake gauge", sports: "Team schedules",
               lc: "College iCal", news: "Headlines", calendar: "Family calendar", radar: "Radar times", tropics: "Tropics (NHC)",
               wallpapers: "Wallpapers", gamewx: "Game weather"}

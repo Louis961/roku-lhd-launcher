@@ -50,7 +50,6 @@ function sourceUrls(cfg as object) as object
         lc: college,
         news: news,
         calendar: calendar,
-        radar: ["https://opengeo.ncep.noaa.gov/geoserver/conus/conus_bref_qcd/ows?service=WMS&request=GetCapabilities"],
         air: ["https://air-quality-api.open-meteo.com/v1/air-quality?latitude=" + lat + "&longitude=" + lon + "&current=us_aqi,pm2_5&hourly=us_aqi&forecast_days=2&timezone=" + currentPlace().timezone.Replace("/", "%2F")],
         tropics: tropics,
         wallpapers: wallpapers,
